@@ -47,17 +47,22 @@ class Downloader(object):
                     progress = int((50 * current_size) / total_length)
                     sys.stdout.write('\r[%s%s] %s/%s' % ('#' * progress, ' ' * (50 - progress), str(current_size), str(total_length)))
                     sys.stdout.flush()
+        sys.stdout.write('\nDone.\n\n')
+        sys.stdout.flush()
 
         # move file to dest folder
         abs_dest_dir = os.path.abspath(dest_dir)
-        if os.path.exists(abs_dest_dir):
-            if not os.path.isdir(abs_dest_dir):
-                log.warning('Not a directory: {}'.format(abs_dest_dir))
-                final_file_path = os.path.abspath(temp_local_file)
+        log.debug('dest dir: {}'.format(abs_dest_dir))
+        if os.path.exists(abs_dest_dir) and (not os.path.isdir(abs_dest_dir)):
+            log.warning('Not a directory: {}'.format(abs_dest_dir))
+            final_file_path = os.path.abspath(temp_local_file)
+            log.debug('local file: {}'.format(final_file_path))
         else:
-            os.makedirs(abs_dest_dir)
+            if not os.path.exists(abs_dest_dir):
+                os.makedirs(abs_dest_dir)
             shutil.copy(temp_local_file, abs_dest_dir)
             final_file_path = os.path.join(abs_dest_dir, base_filename)
+            log.debug('local file: {}'.format(final_file_path))
 
         # remove temp folder
         try:

@@ -10,7 +10,7 @@ import taskcluster
 log = logging.getLogger(__name__)
 
 
-class Task_Finder(object):
+class TaskFinder(object):
     def __init__(self, clientId, accessToken):
         # ref: http://docs.taskcluster.net/services/index/
         self.index = taskcluster.Index({'credentials': {'clientId': clientId, 'accessToken': accessToken}})
