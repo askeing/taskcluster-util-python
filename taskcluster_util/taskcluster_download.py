@@ -6,11 +6,15 @@
 import os
 import json
 import shutil
+import logging
 import argparse
 
 from util.finder import *
 from util.downloader import *
+from taskcluster.exceptions import TaskclusterAuthFailure, TaskclusterRestFailure
 
+
+log = logging.getLogger(__name__)
 
 class DownloadRunner(object):
 
@@ -50,8 +54,24 @@ class DownloadRunner(object):
             access_token = credential.get('accessToken')
 
         if self.options.namespace is not None:
+            # remove the 'index.' and 'root.' of namespace
+            task_namespace = self.options.namespace
+            print('### Finding the TaskID of Namespace [{}] ...'.format(task_namespace))
+            if self.options.namespace.startswith('index.'):
+                task_namespace = self.options.namespace[len('index.'):]
+                print('### Remove the ["index."] of Namespace [{}].'.format(task_namespace))
+            elif self.options.namespace.startswith('root.'):
+                task_namespace = self.options.namespace[len('root.'):]
+                print('### Remove the ["root."] of Namespace [{}].'.format(task_namespace))
+            # find TaskId from Namespace
             task_finder = TaskFinder(client_id, access_token)
-            task_id = task_finder.get_taskid_by_namespace(self.options.namespace)
+            try:
+                task_id = task_finder.get_taskid_by_namespace(task_namespace)
+                print('### The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
+            except TaskclusterRestFailure as e:
+                print('### Can not get the TaskID due to [{}]'.format(e.message))
+                log.error(e.body)
+                exit(-1)
         else:
             task_id = self.options.task_id
 
@@ -70,7 +90,12 @@ class DownloadRunner(object):
                 print('### {} is not a folder.\n'.format(abs_dest_dir))
                 exit(-1)
             print('### Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.options.aritfact_name, task_id))
-            local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, abs_dest_dir)
+            try:
+                local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, abs_dest_dir)
+            except TaskclusterAuthFailure as e:
+                print('### Can not download due to [{}]'.format(e.message))
+                log.error(e.body)
+                exit(-1)
             print('### Download [{}] from TaskID [{}] to [{}] done.'.format(self.options.aritfact_name, task_id, local_file))
 
 
