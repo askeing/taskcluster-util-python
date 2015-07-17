@@ -92,7 +92,7 @@ class DownloadRunner(object):
             print('### Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.options.aritfact_name, task_id))
             try:
                 local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, abs_dest_dir)
-            except TaskclusterAuthFailure as e:
+            except (TaskclusterAuthFailure, TaskclusterRestFailure) as e:
                 print('### Can not download due to [{}]'.format(e.message))
                 log.error(e.body)
                 exit(-1)
