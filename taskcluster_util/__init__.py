@@ -6,10 +6,7 @@
 
 import logging
 import os
-import downloader
-import task_finder
-reload(downloader)
-reload(task_finder)
+from util import *
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +15,3 @@ if os.environ.get('DEBUG_TASKCLUSTER_UTILITIES'):
   if len(log.handlers) == 0:
     log.addHandler(logging.StreamHandler())
 log.addHandler(logging.NullHandler())
-
-from downloader import *
-from task_finder import *

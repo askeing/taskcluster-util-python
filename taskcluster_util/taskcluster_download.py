@@ -17,11 +17,11 @@ class DownloadRunner(object):
     def __init__(self):
         # argument parser
         parser = argparse.ArgumentParser(prog='taskcluster_download', description='The simple download tool for Taskcluster.')
-        parser.add_argument('--credential', action='store', default='credential.json', dest='credential', help='The JSON file which store the credential')
+        parser.add_argument('--credential', action='store', default='credential.json', dest='credential', help='The credential JSON file (default: credential.json)')
         task_group = parser.add_mutually_exclusive_group(required=True)
         task_group.add_argument('-n', '--namespace', action='store', dest='namespace', help='The namespace of task')
         task_group.add_argument('-t', '--taskid', action='store', dest='task_id', help='The taskId of task')
-        artifact_group = parser.add_argument_group('Download Artifact', 'Setup the artifact name and dest folder')
+        artifact_group = parser.add_argument_group('Download Artifact', 'The artifact name and dest folder')
         artifact_group.add_argument('-a', '--artifact', action='store', dest='aritfact_name', help='The artifact name on Taskcluster')
         artifact_group.add_argument('-d', '--dest-dir', action='store', dest='dest_dir', help='The dest folder')
 
@@ -29,11 +29,11 @@ class DownloadRunner(object):
         self.options = parser.parse_args(sys.argv[1:])
 
     def show_latest_artifacts(self, artifact_downloader, task_id):
-        print('### Get latest artifacts of TaskID {}'.format(task_id))
+        print('### Getting latest artifacts of TaskID {} ...'.format(task_id))
         ret = artifact_downloader.get_latest_artifacts(task_id)
         artifacts_list = ret.get('artifacts')
         width = 30
-        print('### {}| {}'.format('Type'.ljust(width), 'Name'.ljust(width)))
+        print('### {}| {}'.format('[Type]'.ljust(width), '[Name]'.ljust(width)))
         for artifact in artifacts_list:
             print('### {}| {}'.format(artifact.get('contentType').ljust(width), artifact.get('name').ljust(width)))
 
@@ -48,7 +48,6 @@ class DownloadRunner(object):
             credential = json.loads(json_string)
             client_id = credential.get('clientId')
             access_token = credential.get('accessToken')
-        print client_id, access_token
 
         if self.options.namespace is not None:
             task_finder = TaskFinder(client_id, access_token)
@@ -70,9 +69,9 @@ class DownloadRunner(object):
             if os.path.exists(abs_dest_dir) and (not os.path.isdir(abs_dest_dir)):
                 print('### {} is not a folder.\n'.format(abs_dest_dir))
                 exit(-1)
-            print('### Download latest artifact {} of TaskID {}'.format(self.options.aritfact_name, task_id))
+            print('### Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.options.aritfact_name, task_id))
             local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, abs_dest_dir)
-            print('### Download {} from {} to {}'.format(self.options.aritfact_name, task_id, local_file))
+            print('### Download [{}] from TaskID [{}] to [{}] done.'.format(self.options.aritfact_name, task_id, local_file))
 
 
 def main():
