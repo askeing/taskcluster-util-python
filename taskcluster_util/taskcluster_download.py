@@ -8,6 +8,8 @@ import json
 import shutil
 import logging
 import argparse
+import textwrap
+from argparse import RawTextHelpFormatter
 
 from util.finder import *
 from util.downloader import *
@@ -16,12 +18,22 @@ from taskcluster.exceptions import TaskclusterAuthFailure, TaskclusterRestFailur
 
 log = logging.getLogger(__name__)
 
+
 class DownloadRunner(object):
 
     def __init__(self):
         # argument parser
-        parser = argparse.ArgumentParser(prog='taskcluster_download', description='The simple download tool for Taskcluster.')
-        parser.add_argument('--credential', action='store', default='credential.json', dest='credential', help='The credential JSON file (default: credential.json)')
+        taskcluster_credential = 'tc_credential.json'
+        parser = argparse.ArgumentParser(prog='taskcluster_download', description='The simple download tool for Taskcluster.',
+                                         formatter_class=RawTextHelpFormatter,
+                                         epilog=textwrap.dedent('''\
+                                         The tc_credential.json Template:
+                                             {
+                                                 "clientId": "",
+                                                 "accessToken": ""
+                                             }
+                                         '''))
+        parser.add_argument('--credential', action='store', default=taskcluster_credential, dest='credential', help='The credential JSON file (default: {})'.format(taskcluster_credential))
         task_group = parser.add_mutually_exclusive_group(required=True)
         task_group.add_argument('-n', '--namespace', action='store', dest='namespace', help='The namespace of task')
         task_group.add_argument('-t', '--taskid', action='store', dest='task_id', help='The taskId of task')

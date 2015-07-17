@@ -29,7 +29,7 @@ class Downloader(object):
 
         ret = self.queue.getLatestArtifact(task_id, full_filename)
         response = ret.get('response')
-        
+
         total_length = 0
         content_length = response.headers.get('content-length')
         if content_length is not None:
