@@ -1,0 +1,3 @@
+recursive-include taskcluster_util/util *.py
+recursive-include taskcluster_util *.json
+exclude MANIFEST.in
