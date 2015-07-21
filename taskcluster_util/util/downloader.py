@@ -15,17 +15,8 @@ log = logging.getLogger(__name__)
 
 
 class Downloader(object):
-    def __init__(self, client_id, access_token, certificate=None):
+    def __init__(self, credentials):
         self.temp_dir = tempfile.mkdtemp()
-        credentials = {
-            'clientId': client_id,
-            'accessToken': access_token,
-        }
-
-        if certificate is not None:
-            credentials['certificate'] = certificate
-
-        print credentials
         self.queue = taskcluster.Queue({'credentials': credentials})
 
     def get_latest_artifacts(self, task_id):

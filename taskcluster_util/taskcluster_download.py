@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
-import json
 import shutil
 import logging
 import argparse
@@ -12,6 +11,7 @@ import argparse
 from util.finder import *
 from util.downloader import *
 from taskcluster.exceptions import TaskclusterAuthFailure, TaskclusterRestFailure
+from model.credentials import Credentials
 
 
 log = logging.getLogger(__name__)
@@ -48,13 +48,8 @@ class DownloadRunner(object):
         if not os.path.isfile(abs_credential_path):
             print('### {} is not a file or is not exist.\n'.format(abs_credential_path))
             exit(-1)
-        with open(abs_credential_path) as fd:
-            json_string = fd.read()
-            credential = json.loads(json_string)
-            client_id = credential.get('clientId')
-            access_token = credential.get('accessToken')
-            certificate = credential.get('certificate')
-            print certificate
+
+        credentials = Credentials.from_file(abs_credential_path)
 
         if self.options.namespace is not None:
             # remove the 'index.' and 'root.' of namespace
@@ -67,7 +62,7 @@ class DownloadRunner(object):
                 task_namespace = self.options.namespace[len('root.'):]
                 print('### Remove the ["root."] of Namespace [{}].'.format(task_namespace))
             # find TaskId from Namespace
-            task_finder = TaskFinder(client_id, access_token)
+            task_finder = TaskFinder(credentials)
             try:
                 task_id = task_finder.get_taskid_by_namespace(task_namespace)
                 print('### The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
@@ -78,7 +73,7 @@ class DownloadRunner(object):
         else:
             task_id = self.options.task_id
 
-        artifact_downloader = Downloader(client_id, access_token, certificate)
+        artifact_downloader = Downloader(credentials)
         if self.options.aritfact_name is None and self.options.dest_dir is None:
             # no artifact_ and dest_dir, then get the latest artifacts list
             self.show_latest_artifacts(artifact_downloader, task_id)
