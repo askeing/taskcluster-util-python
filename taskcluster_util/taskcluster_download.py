@@ -22,7 +22,7 @@ class DownloadRunner(object):
     def __init__(self):
         # argument parser
         parser = argparse.ArgumentParser(prog='taskcluster_download', description='The simple download tool for Taskcluster.')
-        parser.add_argument('--credential', action='store', default='credential.json', dest='credential', help='The credential JSON file (default: credential.json)')
+        parser.add_argument('--credentials', action='store', default='credentials.json', dest='credentials', help='The credentials JSON file (default: credentials.json)')
         task_group = parser.add_mutually_exclusive_group(required=True)
         task_group.add_argument('-n', '--namespace', action='store', dest='namespace', help='The namespace of task')
         task_group.add_argument('-t', '--taskid', action='store', dest='task_id', help='The taskId of task')
@@ -43,13 +43,13 @@ class DownloadRunner(object):
             print('### {}| {}'.format(artifact.get('contentType').ljust(width), artifact.get('name').ljust(width)))
 
     def run(self):
-        # check credential file
-        abs_credential_path = os.path.abspath(self.options.credential)
-        if not os.path.isfile(abs_credential_path):
-            print('### {} is not a file or is not exist.\n'.format(abs_credential_path))
+        # check credentials file
+        abs_credentials_path = os.path.abspath(self.options.credentials)
+        if not os.path.isfile(abs_credentials_path):
+            print('### {} is not a file or is not exist.\n'.format(abs_credentials_path))
             exit(-1)
 
-        credentials = Credentials.from_file(abs_credential_path)
+        credentials = Credentials.from_file(abs_credentials_path)
         connection_options = {'credentials': credentials}
 
         if self.options.namespace is not None:
