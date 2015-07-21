@@ -15,9 +15,9 @@ log = logging.getLogger(__name__)
 
 
 class Downloader(object):
-    def __init__(self, credentials):
+    def __init__(self, options):
         self.temp_dir = tempfile.mkdtemp()
-        self.queue = taskcluster.Queue({'credentials': credentials})
+        self.queue = taskcluster.Queue(options)
 
     def get_latest_artifacts(self, task_id):
         ret = self.queue.listLatestArtifacts(task_id)

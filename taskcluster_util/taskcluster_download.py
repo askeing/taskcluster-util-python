@@ -50,6 +50,7 @@ class DownloadRunner(object):
             exit(-1)
 
         credentials = Credentials.from_file(abs_credential_path)
+        connection_options = {'credentials': credentials}
 
         if self.options.namespace is not None:
             # remove the 'index.' and 'root.' of namespace
@@ -62,7 +63,7 @@ class DownloadRunner(object):
                 task_namespace = self.options.namespace[len('root.'):]
                 print('### Remove the ["root."] of Namespace [{}].'.format(task_namespace))
             # find TaskId from Namespace
-            task_finder = TaskFinder(credentials)
+            task_finder = TaskFinder(connection_options)
             try:
                 task_id = task_finder.get_taskid_by_namespace(task_namespace)
                 print('### The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
@@ -73,7 +74,7 @@ class DownloadRunner(object):
         else:
             task_id = self.options.task_id
 
-        artifact_downloader = Downloader(credentials)
+        artifact_downloader = Downloader(connection_options)
         if self.options.aritfact_name is None and self.options.dest_dir is None:
             # no artifact_ and dest_dir, then get the latest artifacts list
             self.show_latest_artifacts(artifact_downloader, task_id)
