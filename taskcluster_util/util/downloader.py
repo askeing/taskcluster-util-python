@@ -15,10 +15,18 @@ log = logging.getLogger(__name__)
 
 
 class Downloader(object):
-    def __init__(self, client_id, access_token):
+    def __init__(self, client_id, access_token, certificate=None):
         self.temp_dir = tempfile.mkdtemp()
-        # ref: http://docs.taskcluster.net/queue/api-docs/
-        self.queue = taskcluster.Queue({'credentials': {'clientId': client_id, 'accessToken': access_token}})
+        credentials = {
+            'clientId': client_id,
+            'accessToken': access_token,
+        }
+
+        if certificate is not None:
+            credentials['certificate'] = certificate
+
+        print credentials
+        self.queue = taskcluster.Queue({'credentials': credentials})
 
     def get_latest_artifacts(self, task_id):
         ret = self.queue.listLatestArtifacts(task_id)

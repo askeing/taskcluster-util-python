@@ -15,6 +15,7 @@ from taskcluster.exceptions import TaskclusterAuthFailure, TaskclusterRestFailur
 
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 class DownloadRunner(object):
 
@@ -52,6 +53,8 @@ class DownloadRunner(object):
             credential = json.loads(json_string)
             client_id = credential.get('clientId')
             access_token = credential.get('accessToken')
+            certificate = credential.get('certificate')
+            print certificate
 
         if self.options.namespace is not None:
             # remove the 'index.' and 'root.' of namespace
@@ -75,7 +78,7 @@ class DownloadRunner(object):
         else:
             task_id = self.options.task_id
 
-        artifact_downloader = Downloader(client_id, access_token)
+        artifact_downloader = Downloader(client_id, access_token, certificate)
         if self.options.aritfact_name is None and self.options.dest_dir is None:
             # no artifact_ and dest_dir, then get the latest artifacts list
             self.show_latest_artifacts(artifact_downloader, task_id)
