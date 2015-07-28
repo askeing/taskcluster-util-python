@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
-import json
 import shutil
 import logging
 import argparse
@@ -14,26 +13,28 @@ from argparse import RawTextHelpFormatter
 from util.finder import *
 from util.downloader import *
 from taskcluster.exceptions import TaskclusterAuthFailure, TaskclusterRestFailure
+from model.credentials import Credentials
 
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.DEBUG)
 
 
 class DownloadRunner(object):
 
     def __init__(self):
         # argument parser
-        taskcluster_credential = 'tc_credential.json'
+        taskcluster_credentials = 'tc_credentials.json'
         parser = argparse.ArgumentParser(prog='taskcluster_download', description='The simple download tool for Taskcluster.',
                                          formatter_class=RawTextHelpFormatter,
                                          epilog=textwrap.dedent('''\
-                                         The tc_credential.json Template:
+                                         The tc_credentials.json Template:
                                              {
                                                  "clientId": "",
                                                  "accessToken": ""
                                              }
                                          '''))
-        parser.add_argument('--credential', action='store', default=taskcluster_credential, dest='credential', help='The credential JSON file (default: {})'.format(taskcluster_credential))
+        parser.add_argument('--credentials', action='store', default=taskcluster_credentials, dest='credentials', help='The credential JSON file (default: {})'.format(taskcluster_credentials))
         task_group = parser.add_mutually_exclusive_group(required=True)
         task_group.add_argument('-n', '--namespace', action='store', dest='namespace', help='The namespace of task')
         task_group.add_argument('-t', '--taskid', action='store', dest='task_id', help='The taskId of task')
@@ -54,16 +55,14 @@ class DownloadRunner(object):
             print('### {}| {}'.format(artifact.get('contentType').ljust(width), artifact.get('name').ljust(width)))
 
     def run(self):
-        # check credential file
-        abs_credential_path = os.path.abspath(self.options.credential)
-        if not os.path.isfile(abs_credential_path):
-            print('### {} is not a file or is not exist.\n'.format(abs_credential_path))
+        # check credentials file
+        abs_credentials_path = os.path.abspath(self.options.credentials)
+        if not os.path.isfile(abs_credentials_path):
+            print('### {} is not a file or is not exist.\n'.format(abs_credentials_path))
             exit(-1)
-        with open(abs_credential_path) as fd:
-            json_string = fd.read()
-            credential = json.loads(json_string)
-            client_id = credential.get('clientId')
-            access_token = credential.get('accessToken')
+
+        credentials = Credentials.from_file(abs_credentials_path)
+        connection_options = {'credentials': credentials}
 
         if self.options.namespace is not None:
             # remove the 'index.' and 'root.' of namespace
@@ -76,7 +75,7 @@ class DownloadRunner(object):
                 task_namespace = self.options.namespace[len('root.'):]
                 print('### Remove the ["root."] of Namespace [{}].'.format(task_namespace))
             # find TaskId from Namespace
-            task_finder = TaskFinder(client_id, access_token)
+            task_finder = TaskFinder(connection_options)
             try:
                 task_id = task_finder.get_taskid_by_namespace(task_namespace)
                 print('### The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
@@ -87,7 +86,7 @@ class DownloadRunner(object):
         else:
             task_id = self.options.task_id
 
-        artifact_downloader = Downloader(client_id, access_token)
+        artifact_downloader = Downloader(connection_options)
         if self.options.aritfact_name is None and self.options.dest_dir is None:
             # no artifact_ and dest_dir, then get the latest artifacts list
             self.show_latest_artifacts(artifact_downloader, task_id)

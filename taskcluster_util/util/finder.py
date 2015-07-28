@@ -11,9 +11,9 @@ log = logging.getLogger(__name__)
 
 
 class TaskFinder(object):
-    def __init__(self, clientId, accessToken):
+    def __init__(self, options):
         # ref: http://docs.taskcluster.net/services/index/
-        self.index = taskcluster.Index({'credentials': {'clientId': clientId, 'accessToken': accessToken}})
+        self.index = taskcluster.Index(options)
 
     def get_taskid_by_namespace(self, namespace):
         if namespace is None or namespace is "":

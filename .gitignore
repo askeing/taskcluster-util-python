@@ -1,5 +1,8 @@
 # This project's things
+credential.json
 tc_credential.json
+credentials.json
+tc_credentials.json
 
 # Vim
 [._]*.s[a-w][a-z]
