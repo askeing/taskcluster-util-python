@@ -45,8 +45,12 @@ class Downloader(object):
                 fd.write(chunk)
                 if total_length > 0:
                     progress = int((50 * current_size) / total_length)
-                    sys.stdout.write('\r[%s%s] %s/%s' % ('#' * progress, ' ' * (50 - progress), str(current_size), str(total_length)))
-                    sys.stdout.flush()
+                    if progress <= 50:
+                        sys.stdout.write('\r[%s%s] %s/%s' % ('#' * progress, ' ' * (50 - progress), str(current_size), str(total_length)))
+                        sys.stdout.flush()
+                    else:
+                        sys.stdout.write('\r[%s] %s/%s' % ('#' * 50, str(current_size), str(total_length)))
+                        sys.stdout.flush()
         sys.stdout.write('\nDone.\n\n')
         sys.stdout.flush()
 
