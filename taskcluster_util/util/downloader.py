@@ -15,10 +15,9 @@ log = logging.getLogger(__name__)
 
 
 class Downloader(object):
-    def __init__(self, client_id, access_token):
+    def __init__(self, options):
         self.temp_dir = tempfile.mkdtemp()
-        # ref: http://docs.taskcluster.net/queue/api-docs/
-        self.queue = taskcluster.Queue({'credentials': {'clientId': client_id, 'accessToken': access_token}})
+        self.queue = taskcluster.Queue(options)
 
     def get_latest_artifacts(self, task_id):
         ret = self.queue.listLatestArtifacts(task_id)
