@@ -12,7 +12,7 @@ taskcluster_download
 
     usage: taskcluster_download [-h] [--credential CREDENTIAL]
                                 (-n NAMESPACE | -t TASK_ID) [-a ARITFACT_NAME]
-                                [-d DEST_DIR]
+                                [-d DEST_DIR] [-v]
 
     The simple download tool for Taskcluster.
 
@@ -24,6 +24,7 @@ taskcluster_download
                             The namespace of task
       -t TASK_ID, --taskid TASK_ID
                             The taskId of task
+      -v, --verbose         Turn on verbose output, with all the debug logger.
 
     Download Artifact:
       The artifact name and dest folder
