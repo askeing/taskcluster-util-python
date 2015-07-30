@@ -16,11 +16,12 @@ from taskcluster.exceptions import TaskclusterAuthFailure, TaskclusterRestFailur
 from model.credentials import Credentials
 
 
+logger = logging.getLogger(__name__)
+
+
 class DownloadRunner(object):
 
     def __init__(self):
-        logger = logging.getLogger(__name__)
-
         # argument parser
         taskcluster_credentials = 'tc_credentials.json'
         parser = argparse.ArgumentParser(prog='taskcluster_download', description='The simple download tool for Taskcluster.',
@@ -52,21 +53,21 @@ class DownloadRunner(object):
             logging.basicConfig(level=logging.INFO, format=formatter)
 
     def show_latest_artifacts(self, artifact_downloader, task_id):
-        print('### Getting latest artifacts of TaskID {} ...'.format(task_id))
+        logger.info('Getting latest artifacts of TaskID {} ...'.format(task_id))
         ret = artifact_downloader.get_latest_artifacts(task_id)
         artifacts_list = ret.get('artifacts')
         width = 30
-        print('### {}| {}'.format('[Type]'.ljust(width), '[Name]'.ljust(width)))
+        print('{}| {}'.format('[Type]'.ljust(width), '[Name]'.ljust(width)))
         for artifact in artifacts_list:
-            print('### {}| {}'.format(artifact.get('contentType').ljust(width), artifact.get('name').ljust(width)))
+            print('{}| {}'.format(artifact.get('contentType').ljust(width), artifact.get('name').ljust(width)))
 
     def _get_output_directory_path(self):
         abs_dest_dir = os.path.abspath(self.options.dest_dir) if self.options.dest_dir else os.getcwd()
         if os.path.exists(abs_dest_dir) and (not os.path.isdir(abs_dest_dir)):
-            print('### {} is not a folder.\n'.format(abs_dest_dir))
+            logger.warning('{} is not a folder.\n'.format(abs_dest_dir))
             exit(-1)
         elif not os.access(abs_dest_dir, os.W_OK):
-            print('### Can not download to {}. Permission denied.\n'.format(abs_dest_dir))
+            logger.warning('Can not download to {}. Permission denied.\n'.format(abs_dest_dir))
             exit(-1)
         return abs_dest_dir
 
@@ -74,7 +75,7 @@ class DownloadRunner(object):
         # check credentials file
         abs_credentials_path = os.path.abspath(self.options.credentials)
         if not os.path.isfile(abs_credentials_path):
-            print('### {} is not a file or is not exist.\n'.format(abs_credentials_path))
+            logger.warning('{} is not a file or is not exist.\n'.format(abs_credentials_path))
             exit(-1)
 
         credentials = Credentials.from_file(abs_credentials_path)
@@ -83,20 +84,20 @@ class DownloadRunner(object):
         if self.options.namespace is not None:
             # remove the 'index.' and 'root.' of namespace
             task_namespace = self.options.namespace
-            print('### Finding the TaskID of Namespace [{}] ...'.format(task_namespace))
+            logger.info('Finding the TaskID of Namespace [{}] ...'.format(task_namespace))
             if self.options.namespace.startswith('index.'):
                 task_namespace = self.options.namespace[len('index.'):]
-                print('### Remove the ["index."] of Namespace [{}].'.format(task_namespace))
+                logger.info('Remove the ["index."] of Namespace [{}].'.format(task_namespace))
             elif self.options.namespace.startswith('root.'):
                 task_namespace = self.options.namespace[len('root.'):]
-                print('### Remove the ["root."] of Namespace [{}].'.format(task_namespace))
+                logger.info('Remove the ["root."] of Namespace [{}].'.format(task_namespace))
             # find TaskId from Namespace
             task_finder = TaskFinder(connection_options)
             try:
                 task_id = task_finder.get_taskid_by_namespace(task_namespace)
-                print('### The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
+                logger.info('The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
             except TaskclusterRestFailure as e:
-                print('### Can not get the TaskID due to [{}]'.format(e.message))
+                logger.warning('Can not get the TaskID due to [{}]'.format(e.message))
                 logger.error(e.body)
                 exit(-1)
         else:
@@ -109,15 +110,15 @@ class DownloadRunner(object):
         else:
             # has artifact_name, then download it
             abs_dest_dir = self._get_output_directory_path()
-            print('### The destination folder is [{}]'.format(abs_dest_dir))
-            print('### Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.options.aritfact_name, task_id))
+            logger.info('The destination folder is [{}]'.format(abs_dest_dir))
+            logger.info('Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.options.aritfact_name, task_id))
             try:
                 local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, abs_dest_dir)
             except (TaskclusterAuthFailure, TaskclusterRestFailure) as e:
-                print('### Can not download due to [{}]'.format(e.message))
+                logger.warning('Can not download due to [{}]'.format(e.message))
                 logger.error(e.body)
                 exit(-1)
-            print('### Download [{}] from TaskID [{}] to [{}] done.'.format(self.options.aritfact_name, task_id, local_file))
+            logger.info('Download [{}] from TaskID [{}] to [{}] done.'.format(self.options.aritfact_name, task_id, local_file))
 
 
 def main():
