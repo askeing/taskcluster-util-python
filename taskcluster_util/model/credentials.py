@@ -2,10 +2,11 @@ import json
 import logging
 
 
+logger = logging.getLogger(__name__)
+
+
 class Credentials(dict):
     def __init__(self, **kwargs):
-        logger = logging.getLogger(__name__)
-
         dict.__init__(self, **kwargs)
         # We don't follow PEP8 here because we only pass this object as a JSON
         self.clientId = kwargs['clientId']
