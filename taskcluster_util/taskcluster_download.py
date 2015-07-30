@@ -38,7 +38,7 @@ class DownloadRunner(object):
         task_group.add_argument('-t', '--taskid', action='store', dest='task_id', help='The taskId of task')
         artifact_group = parser.add_argument_group('Download Artifact', 'The artifact name and dest folder')
         artifact_group.add_argument('-a', '--artifact', action='store', dest='aritfact_name', help='The artifact name on Taskcluster')
-        artifact_group.add_argument('-d', '--dest-dir', action='store', dest='dest_dir', help='The dest folder')
+        artifact_group.add_argument('-d', '--dest-dir', action='store', dest='dest_dir', help='The dest folder (default: current working folder)')
         parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False, help='Turn on verbose output, with all the debug logger.')
 
         # parser the argv
@@ -59,6 +59,16 @@ class DownloadRunner(object):
         print('### {}| {}'.format('[Type]'.ljust(width), '[Name]'.ljust(width)))
         for artifact in artifacts_list:
             print('### {}| {}'.format(artifact.get('contentType').ljust(width), artifact.get('name').ljust(width)))
+
+    def _get_output_directory_path(self):
+        abs_dest_dir = os.path.abspath(self.options.dest_dir) if self.options.dest_dir else os.getcwd()
+        if os.path.exists(abs_dest_dir) and (not os.path.isdir(abs_dest_dir)):
+            print('### {} is not a folder.\n'.format(abs_dest_dir))
+            exit(-1)
+        elif not os.access(abs_dest_dir, os.W_OK):
+            print('### Can not download to {}. Permission denied.\n'.format(abs_dest_dir))
+            exit(-1)
+        return abs_dest_dir
 
     def run(self):
         # check credentials file
@@ -93,19 +103,13 @@ class DownloadRunner(object):
             task_id = self.options.task_id
 
         artifact_downloader = Downloader(connection_options)
-        if self.options.aritfact_name is None and self.options.dest_dir is None:
-            # no artifact_ and dest_dir, then get the latest artifacts list
+        if self.options.aritfact_name is None:
+            # no artifact_name, then get the latest artifacts list
             self.show_latest_artifacts(artifact_downloader, task_id)
-        elif self.options.aritfact_name is None or self.options.dest_dir is None:
-            # if one of artifact_name and dest_dir is specified, return error
-            print('### Please specify the artifact name and dest folder at the same time.\n')
-            exit(-1)
         else:
-            # has artifact_name and dest_dir, then download it
-            abs_dest_dir = os.path.abspath(self.options.dest_dir)
-            if os.path.exists(abs_dest_dir) and (not os.path.isdir(abs_dest_dir)):
-                print('### {} is not a folder.\n'.format(abs_dest_dir))
-                exit(-1)
+            # has artifact_name, then download it
+            abs_dest_dir = self._get_output_directory_path()
+            print('### The destination folder is [{}]'.format(abs_dest_dir))
             print('### Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.options.aritfact_name, task_id))
             try:
                 local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, abs_dest_dir)
