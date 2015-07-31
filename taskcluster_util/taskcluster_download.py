@@ -61,21 +61,11 @@ class DownloadRunner(object):
         for artifact in artifacts_list:
             print('{}| {}'.format(artifact.get('contentType').ljust(width), artifact.get('name').ljust(width)))
 
-    def _get_output_directory_path(self):
-        abs_dest_dir = os.path.abspath(self.options.dest_dir) if self.options.dest_dir else os.getcwd()
-        if os.path.exists(abs_dest_dir) and (not os.path.isdir(abs_dest_dir)):
-            logger.warning('{} is not a folder.\n'.format(abs_dest_dir))
-            exit(-1)
-        elif not os.access(abs_dest_dir, os.W_OK):
-            logger.warning('Can not download to {}. Permission denied.\n'.format(abs_dest_dir))
-            exit(-1)
-        return abs_dest_dir
-
     def run(self):
         # check credentials file
         abs_credentials_path = os.path.abspath(self.options.credentials)
         if not os.path.isfile(abs_credentials_path):
-            logger.warning('{} is not a file or is not exist.\n'.format(abs_credentials_path))
+            logger.warning('{} is not a file or is not exist.'.format(abs_credentials_path))
             exit(-1)
 
         credentials = Credentials.from_file(abs_credentials_path)
@@ -109,11 +99,9 @@ class DownloadRunner(object):
             self.show_latest_artifacts(artifact_downloader, task_id)
         else:
             # has artifact_name, then download it
-            abs_dest_dir = self._get_output_directory_path()
-            logger.info('The destination folder is [{}]'.format(abs_dest_dir))
             logger.info('Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.options.aritfact_name, task_id))
             try:
-                local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, abs_dest_dir)
+                local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, self.options.dest_dir)
             except (TaskclusterAuthFailure, TaskclusterRestFailure) as e:
                 logger.warning('Can not download due to [{}]'.format(e.message))
                 logger.error(e.body)
