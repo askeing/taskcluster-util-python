@@ -64,19 +64,16 @@ class DownloadRunner(object):
     def _get_output_directory_path(self):
         abs_dest_dir = os.path.abspath(self.options.dest_dir) if self.options.dest_dir else os.getcwd()
         if os.path.exists(abs_dest_dir) and (not os.path.isdir(abs_dest_dir)):
-            logger.warning('{} is not a folder.\n'.format(abs_dest_dir))
-            exit(-1)
+            raise Exception('{} is not a folder.\n'.format(abs_dest_dir))
         elif not os.access(abs_dest_dir, os.W_OK):
-            logger.warning('Can not download to {}. Permission denied.\n'.format(abs_dest_dir))
-            exit(-1)
+            raise Exception('Can not download to {}. Permission denied.\n'.format(abs_dest_dir))
         return abs_dest_dir
 
     def run(self):
         # check credentials file
         abs_credentials_path = os.path.abspath(self.options.credentials)
         if not os.path.isfile(abs_credentials_path):
-            logger.warning('{} is not a file or is not exist.\n'.format(abs_credentials_path))
-            exit(-1)
+            raise Exception('{} is not a file or is not exist.'.format(abs_credentials_path))
 
         credentials = Credentials.from_file(abs_credentials_path)
         connection_options = {'credentials': credentials}
@@ -97,9 +94,8 @@ class DownloadRunner(object):
                 task_id = task_finder.get_taskid_by_namespace(task_namespace)
                 logger.info('The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
             except TaskclusterRestFailure as e:
-                logger.warning('Can not get the TaskID due to [{}]'.format(e.message))
                 logger.error(e.body)
-                exit(-1)
+                raise Exception('Can not get the TaskID due to [{}]'.format(e.message))
         else:
             task_id = self.options.task_id
 
@@ -115,15 +111,17 @@ class DownloadRunner(object):
             try:
                 local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, abs_dest_dir)
             except (TaskclusterAuthFailure, TaskclusterRestFailure) as e:
-                logger.warning('Can not download due to [{}]'.format(e.message))
                 logger.error(e.body)
-                exit(-1)
+                raise Exception('Can not download due to [{}]'.format(e.message))
             logger.info('Download [{}] from TaskID [{}] to [{}] done.'.format(self.options.aritfact_name, task_id, local_file))
 
 
 def main():
-    myapp = DownloadRunner()
-    myapp.run()
+    try:
+        DownloadRunner().run()
+    except Exception as e:
+        logger.error(e.message)
+        exit(1)
 
 
 if __name__ == '__main__':
