@@ -11,12 +11,12 @@ import tempfile
 import taskcluster
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class Downloader(object):
     def __init__(self, options):
-        self.temp_dir = tempfile.mkdtemp()
+        self.temp_dir = tempfile.mkdtemp(prefix='tmp_tcdl_')
         self.queue = taskcluster.Queue(options)
 
     def get_latest_artifacts(self, task_id):
@@ -54,23 +54,35 @@ class Downloader(object):
         sys.stdout.flush()
 
         # move file to dest folder
-        abs_dest_dir = os.path.abspath(dest_dir)
-        log.debug('dest dir: {}'.format(abs_dest_dir))
-        if os.path.exists(abs_dest_dir) and (not os.path.isdir(abs_dest_dir)):
-            log.warning('Not a directory: {}'.format(abs_dest_dir))
-            final_file_path = os.path.abspath(temp_local_file)
-            log.debug('local file: {}'.format(final_file_path))
-        else:
-            if not os.path.exists(abs_dest_dir):
-                os.makedirs(abs_dest_dir)
-            shutil.copy(temp_local_file, abs_dest_dir)
-            final_file_path = os.path.join(abs_dest_dir, base_filename)
-            log.debug('local file: {}'.format(final_file_path))
-
-        # remove temp folder
+        final_file_path = temp_local_file
+        abs_dest_dir = os.path.abspath(dest_dir) if dest_dir else os.getcwd()
         try:
-            shutil.rmtree(self.temp_dir)  # delete directory
-        except OSError:
-            log.warning('Can not remove temporary folder: {}'.format(self.temp_dir))
+            FolderHandler(abs_dest_dir).copy_elements_from(temp_local_file)
+            final_file_path = os.path.join(abs_dest_dir, base_filename)
+            # remove temp folder
+            try:
+                shutil.rmtree(self.temp_dir)  # delete directory
+            except OSError:
+                logger.warning('Can not remove temporary folder: {}'.format(self.temp_dir))
+        except Exception as e:
+            logger.error(e.message)
+            logger.debug('local file: [{}]'.format(temp_local_file))
 
         return final_file_path
+
+
+class FolderHandler:
+    def __init__(self, path):
+        self.path = path
+        self._check_if_folder_is_valid()
+
+    def _check_if_folder_is_valid(self):
+        if not os.path.exists(self.path):
+            raise Exception("[{}] doesn't exist.".format(self.path))
+        if not os.path.isdir(self.path):
+            raise Exception('[{}] is not a folder.'.format(self.path))
+        if not os.access(self.path, os.W_OK):
+            raise Exception('Write permission denied on [{}].'.format(self.path))
+
+    def copy_elements_from(self, origin):
+        shutil.copy(origin, self.path)
