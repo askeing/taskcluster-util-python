@@ -78,11 +78,19 @@ class FolderHandler:
 
     def _check_if_folder_is_valid(self):
         if not os.path.exists(self.path):
-            raise Exception("[{}] doesn't exist.".format(self.path))
+            logger.debug("[{}] doesn't exist, trying to create it".format(self.path))
+            self._create_folder()
         if not os.path.isdir(self.path):
             raise Exception('[{}] is not a folder.'.format(self.path))
         if not os.access(self.path, os.W_OK):
             raise Exception('Write permission denied on [{}].'.format(self.path))
+
+    def _create_folder(self):
+        try:
+            os.makedirs(self.path)
+        except os.error as e:
+            logger.debug('errno: [{}], strerror: [{}], filename: [{}]'.format(e.errno, e.strerror, e.filename))
+            raise Exception('Can not create the folder: [{}]'.format(self.path))
 
     def copy_elements_from(self, origin):
         shutil.copy(origin, self.path)
