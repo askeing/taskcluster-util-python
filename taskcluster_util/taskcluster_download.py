@@ -80,12 +80,8 @@ class DownloadRunner(object):
                 logger.info('Remove the ["root."] of Namespace [{}].'.format(task_namespace))
             # find TaskId from Namespace
             task_finder = TaskFinder(connection_options)
-            try:
-                task_id = task_finder.get_taskid_by_namespace(task_namespace)
-                logger.info('The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
-            except TaskclusterRestFailure as e:
-                logger.error(e.body)
-                raise Exception('Can not get the TaskID due to [{}]'.format(e.message))
+            task_id = task_finder.get_taskid_by_namespace(task_namespace)
+            logger.info('The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
         else:
             task_id = self.options.task_id
 
@@ -96,11 +92,7 @@ class DownloadRunner(object):
         else:
             # has artifact_name, then download it
             logger.info('Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.options.aritfact_name, task_id))
-            try:
-                local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, self.options.dest_dir)
-            except (TaskclusterAuthFailure, TaskclusterRestFailure) as e:
-                logger.error(e.body)
-                raise Exception('Can not download due to [{}]'.format(e.message))
+            local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, self.options.dest_dir)
             logger.info('Download [{}] from TaskID [{}] to [{}] done.'.format(self.options.aritfact_name, task_id, local_file))
 
 
