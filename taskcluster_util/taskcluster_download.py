@@ -64,8 +64,6 @@ class DownloadRunner(object):
     def run(self):
         # check credentials file
         abs_credentials_path = os.path.abspath(self.options.credentials)
-        if not os.path.isfile(abs_credentials_path):
-            raise Exception('{} is not a file or is not exist.'.format(abs_credentials_path))
 
         credentials = Credentials.from_file(abs_credentials_path)
         connection_options = {'credentials': credentials}
@@ -110,7 +108,9 @@ def main():
     try:
         DownloadRunner().run()
     except Exception as e:
-        logger.error(e.message)
+        logger.error(e)
+        if e.__dict__:
+            logger.error(e.__dict__)
         exit(1)
 
 
