@@ -64,9 +64,6 @@ class DownloadRunner(object):
     def run(self):
         # check credentials file
         abs_credentials_path = os.path.abspath(self.options.credentials)
-        if not os.path.isfile(abs_credentials_path):
-            logger.warning('{} is not a file or is not exist.'.format(abs_credentials_path))
-            exit(-1)
 
         credentials = Credentials.from_file(abs_credentials_path)
         connection_options = {'credentials': credentials}
@@ -83,13 +80,8 @@ class DownloadRunner(object):
                 logger.info('Remove the ["root."] of Namespace [{}].'.format(task_namespace))
             # find TaskId from Namespace
             task_finder = TaskFinder(connection_options)
-            try:
-                task_id = task_finder.get_taskid_by_namespace(task_namespace)
-                logger.info('The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
-            except TaskclusterRestFailure as e:
-                logger.warning('Can not get the TaskID due to [{}]'.format(e.message))
-                logger.error(e.body)
-                exit(-1)
+            task_id = task_finder.get_taskid_by_namespace(task_namespace)
+            logger.info('The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
         else:
             task_id = self.options.task_id
 
@@ -100,18 +92,18 @@ class DownloadRunner(object):
         else:
             # has artifact_name, then download it
             logger.info('Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.options.aritfact_name, task_id))
-            try:
-                local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, self.options.dest_dir)
-            except (TaskclusterAuthFailure, TaskclusterRestFailure) as e:
-                logger.warning('Can not download due to [{}]'.format(e.message))
-                logger.error(e.body)
-                exit(-1)
+            local_file = artifact_downloader.download_latest_artifact(task_id, self.options.aritfact_name, self.options.dest_dir)
             logger.info('Download [{}] from TaskID [{}] to [{}] done.'.format(self.options.aritfact_name, task_id, local_file))
 
 
 def main():
-    myapp = DownloadRunner()
-    myapp.run()
+    try:
+        DownloadRunner().run()
+    except Exception as e:
+        logger.error(e)
+        if e.__dict__:
+            logger.error(e.__dict__)
+        exit(1)
 
 
 if __name__ == '__main__':
