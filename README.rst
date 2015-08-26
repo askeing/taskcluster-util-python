@@ -4,9 +4,21 @@ taskcluster-util-python
 Python Taskcluster Utilities.
 
 
+Installation
+------------
+
+To install **taskcluster_util**, simply:
+
+.. code-block:: bash
+
+    $ pip install -U taskcluster_util
+
+
+Tools Usages
+------------
+
 taskcluster_download
---------------------
-**Usage**
+++++++++++++++++++++
 
 .. code-block:: bash
 
