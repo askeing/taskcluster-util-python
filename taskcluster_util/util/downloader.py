@@ -15,15 +15,30 @@ logger = logging.getLogger(__name__)
 
 
 class Downloader(object):
-    def __init__(self, options):
+    def __init__(self, options={}):
+        """
+        Ref: U{http://docs.taskcluster.net/queue/}
+        """
         self.temp_dir = tempfile.mkdtemp(prefix='tmp_tcdl_')
         self.queue = taskcluster.Queue(options)
 
     def get_latest_artifacts(self, task_id):
+        """
+        Get the lastest artifacts of given task.
+        @param task_id: the given task.
+        @return: the artifacts list.
+        """
         ret = self.queue.listLatestArtifacts(task_id)
         return ret
 
     def download_latest_artifact(self, task_id, full_filename, dest_dir):
+        """
+        Download latest artifact.
+        @param task_id: the given task.
+        @param full_filename: the given artifact name.
+        @param dest_dir: the target local folder.
+        @return: the downloaded file path.
+        """
         base_filename = os.path.basename(full_filename)
 
         ret = self.queue.getLatestArtifact(task_id, full_filename)
@@ -73,6 +88,9 @@ class Downloader(object):
 
 class FolderHandler:
     def __init__(self, path):
+        """
+        Setup the target folder.
+        """
         self.path = path
         self._check_if_folder_is_valid()
 
@@ -93,4 +111,8 @@ class FolderHandler:
             raise Exception('Can not create the folder: [{}]'.format(self.path))
 
     def copy_elements_from(self, origin):
+        """
+        Copy file from origin to target folder.
+        @param origin: the origin file path.
+        """
         shutil.copy(origin, self.path)
