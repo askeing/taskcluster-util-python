@@ -3,6 +3,7 @@ credential.json
 tc_credential.json
 credentials.json
 tc_credentials.json
+env-python
 
 # Vim
 [._]*.s[a-w][a-z]
