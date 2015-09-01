@@ -1,5 +1,7 @@
 taskcluster-util-python
 =======================
+.. image:: https://travis-ci.org/askeing/taskcluster-util-python.svg
+    :target: https://travis-ci.org/askeing/taskcluster-util-python
 
 Python Taskcluster Utilities.
 
