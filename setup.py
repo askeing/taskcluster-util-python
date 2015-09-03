@@ -8,6 +8,7 @@ VERSION='0.0.10'
 # Bug 1184209 - reference-format: Handle end-points that returns a stream (Discussion)
 # when Bug 1184209 is fixed, then modify the taskcluster version to >=0.0.21
 install_requires = [
+  'easygui==0.97.2',
   'taskcluster==0.0.21',
 ]
 
@@ -46,5 +47,6 @@ if __name__ == '__main__':
         # -*- Entry points: -*-
         [console_scripts]
         taskcluster_download = taskcluster_util.taskcluster_download:main
+        taskcluster_traverse = taskcluster_util.taskcluster_traverse:main
         """,
   )
