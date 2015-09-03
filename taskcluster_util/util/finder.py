@@ -38,6 +38,17 @@ class TaskFinder(object):
         ret = self.index.findTask(namespace)
         return ret['taskId']
 
+    def is_root(self, ns_node):
+        """
+        Check the namespace is root node or not.
+        For now, the root node is "".
+        @param ns_node: given namespace.
+        @return: True if it is root, False if not.
+        """
+        if not ns_node:
+            return True
+        return False
+
     def get_parent_namespace(self, ns_node=''):
         """
         Get the parent namespace of given namepsace.
@@ -47,6 +58,8 @@ class TaskFinder(object):
         ret = ns_node.split('.')
         if len(ret) > 1:
             ret = ret[:len(ret)-1]
+        elif len(ret) == 1:
+            ret = ''
         return '.'.join(ret)
 
     def get_namespaces(self, ns_node='', limit=1000):
