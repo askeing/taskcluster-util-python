@@ -19,7 +19,6 @@ class Downloader(object):
         """
         Ref: U{http://docs.taskcluster.net/queue/}
         """
-        self.temp_dir = tempfile.mkdtemp(prefix='tmp_tcdl_')
         self.queue = taskcluster.Queue(options)
 
     def get_latest_artifacts(self, task_id):
@@ -52,6 +51,7 @@ class Downloader(object):
         chunk_size = 1024
         current_size = 0
         # download file into temp folder
+        self.temp_dir = tempfile.mkdtemp(prefix='tmp_tcdl_')
         temp_local_file = os.path.join(self.temp_dir, base_filename)
         with open(temp_local_file, 'wb') as fd:
             for chunk in response.iter_content(chunk_size):
