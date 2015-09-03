@@ -173,7 +173,12 @@ class TraverseRunner(object):
             for item in choice_artifact_list:
                 logger.info('Download: {}'.format(item))
                 local_file = self.artifact_downloader.download_latest_artifact(task_id, item, self.dest_dir)
-            easygui.msgbox('Download Finished.')
+            #easygui.msgbox('Download Finished.')
+            button_yes = 'Yes'
+            button_no = 'No'
+            user_choice = easygui.buttonbox('Download Finished.\n\nWould you like to continue traversing?', 'Finish',  choices=[button_yes, button_no])
+            if user_choice != button_yes:
+                exit(0)
 
     def run(self):
         """
