@@ -70,6 +70,40 @@ class TraverseRunner(object):
         self.dest_dir = self.options.dest_dir
         return self
 
+    def _check_target_dir(self, dest_dir):
+        """
+        GUI: show GUI for selecting the target folder when there is no given "--dest-dir" argument.
+        @param dest_dir: the target folder from cli.
+        """
+        if not dest_dir:
+            title = 'Select Target Folder'
+            return easygui.diropenbox(title=title, default=os.getcwd())
+
+    def _check_credentials(self):
+        """
+        GUI: show GUI for entering the credentials when there is no credentials.
+        """
+        if not self.connection_options:
+            msg = textwrap.dedent('''\
+            Please enter your credentials for downloading.
+            Or you can put it in "<CURRENT_DIR>/tc_credentials.json" file.
+
+            e.g. {"clientId": "XXX", "accessToken": "XXX" ...}
+            ''')
+            title = 'Enter Credentials'
+            ret = easygui.enterbox(msg, title)
+            try:
+                raw_credentials_dict = json.loads(ret)
+                if 'credentials' in raw_credentials_dict:
+                    self.connection_options = raw_credentials_dict
+                elif 'clientId' in raw_credentials_dict:
+                    self.connection_options = {'credentials': raw_credentials_dict}
+                logger.debug('connection options: {}'.format(self.connection_options))
+            except:
+                self.connection_options = {}
+                logger.debug('Can not load connection options from user input.')
+                easygui.msgbox('Can not load connection options from user input.\nRun with no connection options.')
+
     def _get_entry_namespace(self):
         """
         If entry_namespace is task, show GUI for downloading and return parent namespace.
@@ -126,31 +160,6 @@ class TraverseRunner(object):
         msg = 'Please select the namespace.\n\nCurrent Namespace: [{}]'.format(current_namespace)
         title = 'Select Namespace'
         return easygui.choicebox(msg, title, choices)
-
-    def _check_target_dir(self, dest_dir):
-        """
-        GUI: show GUI for selecting the target folder when there is no given "--dest-dir" argument.
-        @param dest_dir: the target folder from cli.
-        """
-        if not dest_dir:
-            title = 'Select Target Folder'
-            return easygui.diropenbox(title=title, default=os.getcwd())
-
-    def _check_credentials(self):
-        """
-        GUI: show GUI for entering the credentials when there is no credentials.
-        """
-        if not self.connection_options:
-            msg = 'Please enter your credentials for downloading.\nOr you can put tc_credentials.json file under your current folder.\ne.g. {"credentials": {"clientId": "XXX", "accessToken": "XXX" ...}}'
-            title = 'Enter Credentials'
-            ret = easygui.enterbox(msg, title)
-            try:
-                self.connection_options = json.loads(ret)
-                logger.debug('connection options: {}'.format(self.connection_options))
-            except:
-                self.connection_options = {}
-                logger.debug('Can not load connection options from user input.')
-                easygui.msgbox('Can not load connection options from user input.\nRun with no connection options.')
 
     def gui_download_artifacts(self, task_name, task_id):
         """
