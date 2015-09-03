@@ -4,7 +4,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 import os
-import shutil
 import logging
 import argparse
 import textwrap
@@ -31,6 +30,9 @@ class TraverseRunner(object):
         self.dest_dir = None
 
     def cli(self):
+        """
+        Handle the argument parse, and the return the instance itself.
+        """
         # argument parser
         taskcluster_credentials = 'tc_credentials.json'
         parser = argparse.ArgumentParser(prog='taskcluster_download', description='The simple download tool for Taskcluster.',
@@ -43,6 +45,7 @@ class TraverseRunner(object):
                                              }
                                          '''))
         parser.add_argument('--credentials', action='store', default=taskcluster_credentials, dest='credentials', help='The credential JSON file (default: {})'.format(taskcluster_credentials))
+        parser.add_argument('-n', '--namespace', action='store', dest='namespace', default='', help='The namespace of task')
         parser.add_argument('-d', '--dest-dir', action='store', dest='dest_dir', help='The dest folder (default: current working folder)')
         parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False, help='Turn on verbose output, with all the debug logger.')
 
@@ -56,14 +59,34 @@ class TraverseRunner(object):
             formatter = '%(levelname)s: %(message)s'
             logging.basicConfig(level=logging.INFO, format=formatter)
         # check credentials file
-        abs_credentials_path = os.path.abspath(self.options.credentials)
-        credentials = Credentials.from_file(abs_credentials_path)
-        self.connection_options = {'credentials': credentials}
+        try:
+            abs_credentials_path = os.path.abspath(self.options.credentials)
+            credentials = Credentials.from_file(abs_credentials_path)
+            self.connection_options = {'credentials': credentials}
+        except Exception as e:
+            logger.debug(e)
         # assign the variable
+        self.entry_namespace = self.options.namespace
         self.dest_dir = self.options.dest_dir
         return self
 
+    def _get_entry_namespace(self):
+        """
+        If entry_namespace is task, show GUI for downloading and return parent namespace.
+        """
+        if self.task_finder.is_task(self.entry_namespace):
+            task_name = self.entry_namespace
+            task_id = self.task_finder.get_taskid_by_namespace(task_name)
+            parent = self.task_finder.get_parent_namespace(task_name)
+            self.gui_download_artifacts(task_name, task_id)
+            return parent
+        else:
+            return self.entry_namespace
+
     def _get_latest_artifacts(self, task_id):
+        """
+        Return the latest artifacts name list
+        """
         logger.debug('Getting latest artifacts of TaskID {} ...'.format(task_id))
         ret = self.artifact_downloader.get_latest_artifacts(task_id)
         artifacts_list = ret.get('artifacts')
@@ -74,6 +97,12 @@ class TraverseRunner(object):
         return artifacts_name_list
 
     def gui_select_artifacts(self, task_name='', task_id=''):
+        """
+        GUI: select the artifacts. (multiple)
+        @param task_name: the task name.
+        @param task_id: the task id.
+        @return: list of selections.
+        """
         try:
             choices = self._get_latest_artifacts(task_id)
             if task_name:
@@ -87,18 +116,30 @@ class TraverseRunner(object):
             easygui.msgbox(e, title)
             return []
 
-    def gui_select_namespaces(self, current_namespace, list):
-        choices = list
+    def gui_select_namespaces(self, current_namespace, sub_namespace_list):
+        """
+        GUI: select the namespace.
+        @param current_namespace: the current namespace's name.
+        @param sub_namespace_list: the list of sub-namespace under current namespace.
+        """
+        choices = sub_namespace_list
         msg = 'Please select the namespace.\n\nCurrent Namespace: [{}]'.format(current_namespace)
         title = 'Select Namespace'
         return easygui.choicebox(msg, title, choices)
 
     def _check_target_dir(self, dest_dir):
+        """
+        GUI: show GUI for selecting the target folder when there is no given "--dest-dir" argument.
+        @param dest_dir: the target folder from cli.
+        """
         if not dest_dir:
             title = 'Select Target Folder'
             return easygui.diropenbox(title=title, default=os.getcwd())
 
     def _check_credentials(self):
+        """
+        GUI: show GUI for entering the credentials when there is no credentials.
+        """
         if not self.connection_options:
             msg = 'Please enter your credentials for downloading.\nOr you can put tc_credentials.json file under your current folder.\ne.g. {"credentials": {"clientId": "XXX", "accessToken": "XXX" ...}}'
             title = 'Enter Credentials'
@@ -111,14 +152,31 @@ class TraverseRunner(object):
                 logger.debug('Can not load connection options from user input.')
                 easygui.msgbox('Can not load connection options from user input.\nRun with no connection options.')
 
+    def gui_download_artifacts(self, task_name, task_id):
+        """
+        GUI: select artifacts for downloading.
+        @param task_name: the task name.
+        @param task_id: the TaskId.
+        """
+        choice_artifact_list = self.gui_select_artifacts(task_name, task_id)
+        if choice_artifact_list:
+            self._check_target_dir(self.dest_dir)
+            for item in choice_artifact_list:
+                logger.info('Download: {}'.format(item))
+                local_file = self.artifact_downloader.download_latest_artifact(task_id, item, self.dest_dir)
+            easygui.msgbox('Download Finished.')
+
     def run(self):
+        """
+        Entry point.
+        """
         # check the credentials for Taskcluster
         self._check_credentials()
         # prepare the utilies
         self.task_finder = TaskFinder(self.connection_options)
         self.artifact_downloader = Downloader(self.connection_options)
         # traverse the Taskcluster
-        current_node = ''
+        current_node = self._get_entry_namespace()
         while True:
             ret_ns_task_dict = self.task_finder.get_namespaces_and_tasks(current_node)
             ns_task_list = []
@@ -157,12 +215,7 @@ class TraverseRunner(object):
                     task_id = choice_info[2]
                     logger.debug('Selcet Task: {}, TaskId: {}'.format(task_name, task_id))
                     # select downloading artifacts
-                    choice_artifact_list = self.gui_select_artifacts(task_name, task_id)
-                    self._check_target_dir(self.dest_dir)
-                    for item in choice_artifact_list:
-                        logger.info('Download: {}'.format(item))
-                        local_file = self.artifact_downloader.download_latest_artifact(task_id, item, self.dest_dir)
-                    easygui.msgbox('Download Finished.')
+                    self.gui_download_artifacts(task_name, task_id)
 
 
 def main():

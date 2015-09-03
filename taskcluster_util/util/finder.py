@@ -26,6 +26,31 @@ class TaskFinder(object):
         """
         self.index = taskcluster.Index(options)
 
+    def is_root(self, ns_node):
+        """
+        Check the namespace is root node or not.
+        For now, the root node is "".
+        @param ns_node: given namespace.
+        @return: True if it is root, False if not.
+        """
+        if not ns_node:
+            return True
+        return False
+
+    def is_task(self, namespace):
+        """
+        Check the given namespace is task or it's a namespace.
+        @param namespace: the given namespace.
+        @return: True if it's task. False if it's namespace.
+        """
+        try:
+            # if it's a task
+            self.index.findTask(namespace)
+            return True
+        except:
+            # except if it's not task
+            return False
+
     def get_taskid_by_namespace(self, namespace):
         """
         Get the TaskId of task.
@@ -37,17 +62,6 @@ class TaskFinder(object):
         # format {'data':..., 'expires':..., 'namespace':..., 'rank':..., 'taskId':...}
         ret = self.index.findTask(namespace)
         return ret['taskId']
-
-    def is_root(self, ns_node):
-        """
-        Check the namespace is root node or not.
-        For now, the root node is "".
-        @param ns_node: given namespace.
-        @return: True if it is root, False if not.
-        """
-        if not ns_node:
-            return True
-        return False
 
     def get_parent_namespace(self, ns_node=''):
         """
