@@ -57,7 +57,7 @@ class TaskFinder(object):
         """
         ret = ns_node.split('.')
         if len(ret) > 1:
-            ret = ret[:len(ret)-1]
+            ret = ret[:len(ret) - 1]
         elif len(ret) == 1:
             ret = ''
         return '.'.join(ret)
@@ -125,5 +125,5 @@ class TaskFinder(object):
         # get namespaces
         result[TaskFinder._NAMESPACES] = self.get_namespaces(ns_node, limit)
         # get tasks
-        result[TaskFinder._TASKS]= self.get_tasks(ns_node, limit)
+        result[TaskFinder._TASKS] = self.get_tasks(ns_node, limit)
         return result
