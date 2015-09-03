@@ -19,7 +19,7 @@ class FinderTester(unittest.TestCase):
         ret = f.get_parent_namespace('foo.bar')
         self.assertEqual(ret, expected_ret)
 
-        expected_ret = 'root'
+        expected_ret = ''
         ret = f.get_parent_namespace('root')
         self.assertEqual(ret, expected_ret)
 
