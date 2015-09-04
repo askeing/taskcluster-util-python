@@ -209,11 +209,13 @@ class TraverseRunner(object):
             # if there is no target dir, then show gui for user
             self.dest_dir = self._check_target_dir(self.dest_dir)
             if self.dest_dir:
+                local_file_list = []
                 # after user select the dir, download artifacts
                 for item in choice_artifact_list:
                     logger.info('Download: {}'.format(item))
                     try:
                         local_file = self.artifact_downloader.download_latest_artifact(task_id, item, self.dest_dir)
+                        local_file_list.append(local_file)
                     except Exception as e:
                         title = 'Download Failed'
                         msg = textwrap.dedent('''\
@@ -224,17 +226,7 @@ class TraverseRunner(object):
                         * Tips: [Enter] OK
                         ''').format(item, e)
                         easygui.msgbox(msg, title)
-                title = 'Download'
-                msg = textwrap.dedent('''\
-                Finished.
-
-                Would you like to continue traversing?
-
-                * Tips: [←][→] Move, [Enter] Select, [Esc] No
-                ''')
-                user_choice = easygui.ynbox(msg, title)
-                if not user_choice:
-                    exit(0)
+                self.do_after_download(local_file_list)
             else:
                 # if user cancel the selection of dir, stop download.
                 title = 'Cancel'
@@ -248,6 +240,23 @@ class TraverseRunner(object):
                 user_choice = easygui.ynbox(msg, title)
                 if not user_choice:
                     exit(0)
+
+    def do_after_download(self, downloaded_file_list):
+        """
+        Do something after downloading finished.
+        @param downloaded_file_list: the downloaded file path list.
+        """
+        title = 'Download'
+        msg = textwrap.dedent('''\
+        Finished.
+
+        Would you like to continue traversing?
+
+        * Tips: [←][→] Move, [Enter] Select, [Esc] No
+        ''')
+        user_choice = easygui.ynbox(msg, title)
+        if not user_choice:
+            exit(0)
 
     def run(self):
         """
