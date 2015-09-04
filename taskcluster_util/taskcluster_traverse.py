@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -84,13 +85,15 @@ class TraverseRunner(object):
         GUI: show GUI for entering the credentials when there is no credentials.
         """
         if not self.connection_options:
+            title = 'Enter Credentials'
             msg = textwrap.dedent('''\
-            Please enter your credentials for downloading.
+            Please enter your Credentials for downloading.
             Or you can put it in "<CURRENT_DIR>/tc_credentials.json" file.
 
             e.g. {"clientId": "XXX", "accessToken": "XXX" ...}
+
+            * Tips: [←][→] Move, [Enter] Select, [Esc] Cancel
             ''')
-            title = 'Enter Credentials'
             ret = easygui.enterbox(msg, title)
             try:
                 raw_credentials_dict = json.loads(ret)
@@ -102,7 +105,14 @@ class TraverseRunner(object):
             except:
                 self.connection_options = {}
                 logger.debug('Can not load connection options from user input.')
-                easygui.msgbox('Can not load connection options from user input.\nRun with no connection options.')
+                title = 'Load Options Error'
+                msg = textwrap.dedent('''\
+                Can not load Credentials from user input.
+                Run with no credentials.
+
+                * Tips: [Enter] OK
+                ''')
+                easygui.msgbox(msg, title)
 
     def _get_entry_namespace(self):
         """
@@ -139,15 +149,35 @@ class TraverseRunner(object):
         """
         try:
             choices = self._get_latest_artifacts(task_id)
-            if task_name:
-                msg = 'Please select the artifacts you want to download.\n\nTask Name: [{}]\nTask ID: [{}]'.format(task_name, task_id)
-            else:
-                msg = 'Please select the artifacts you want to download.\n\nTask ID: [{}]'.format(task_id)
             title = 'Select Artifacts'
+            if task_name:
+                msg = textwrap.dedent('''\
+                Please select the artifacts you want to download.
+
+                - Task Name: [{}]
+                - Task ID: [{}]
+
+                * Tips: [↑][↓] Move, [Space] Select, [Enter] OK
+                ''').format(task_name, task_id)
+            else:
+                msg = textwrap.dedent('''\
+                Please select the artifacts you want to download.
+
+                - Task ID: [{}]
+
+                * Tips: [↑][↓] Move, [Space] Select, [Enter] OK, [Esc] Cancel
+                ''').format(task_id)
             return easygui.multchoicebox(msg, title, choices)
         except Exception as e:
             title = 'Exception'
-            easygui.msgbox(e, title)
+            msg = textwrap.dedent('''\
+            Error: [{}] [{}]
+
+            Exception: {}
+
+            * Tips: [Enter] OK
+            ''').format(task_name, task_id, e)
+            easygui.msgbox(msg, title)
             return []
 
     def gui_select_namespaces(self, current_namespace, sub_namespace_list):
@@ -157,7 +187,13 @@ class TraverseRunner(object):
         @param sub_namespace_list: the list of sub-namespace under current namespace.
         """
         choices = sub_namespace_list
-        msg = 'Please select the namespace.\n\nCurrent Namespace: [{}]'.format(current_namespace)
+        msg = textwrap.dedent('''\
+        Please select the namespace.
+
+        - Current Namespace: [{}]
+
+        * Tips: [↑][↓] Select, [Enter] OK, [Esc] Cancel
+        ''').format(current_namespace)
         title = 'Select Namespace'
         return easygui.choicebox(msg, title, choices)
 
@@ -169,16 +205,48 @@ class TraverseRunner(object):
         """
         choice_artifact_list = self.gui_select_artifacts(task_name, task_id)
         if choice_artifact_list:
-            self._check_target_dir(self.dest_dir)
-            for item in choice_artifact_list:
-                logger.info('Download: {}'.format(item))
-                local_file = self.artifact_downloader.download_latest_artifact(task_id, item, self.dest_dir)
-            #easygui.msgbox('Download Finished.')
-            button_yes = 'Yes'
-            button_no = 'No'
-            user_choice = easygui.buttonbox('Download Finished.\n\nWould you like to continue traversing?', 'Finish',  choices=[button_yes, button_no])
-            if user_choice != button_yes:
-                exit(0)
+            # if there is no target dir, then show gui for user
+            self.dest_dir = self._check_target_dir(self.dest_dir)
+            if self.dest_dir:
+                # after user select the dir, download artifacts
+                for item in choice_artifact_list:
+                    logger.info('Download: {}'.format(item))
+                    try:
+                        local_file = self.artifact_downloader.download_latest_artifact(task_id, item, self.dest_dir)
+                    except Exception as e:
+                        title = 'Download Failed'
+                        msg = textwrap.dedent('''\
+                        Can not download: [{}]
+
+                        Exception: {}
+
+                        * Tips: [Enter] OK
+                        ''').format(item, e)
+                        easygui.msgbox(msg, title)
+                title = 'Download'
+                msg = textwrap.dedent('''\
+                Finished.
+
+                Would you like to continue traversing?
+
+                * Tips: [←][→] Move, [Enter] Select, [Esc] No
+                ''')
+                user_choice = easygui.ynbox(msg, title)
+                if not user_choice:
+                    exit(0)
+            else:
+                # if user cancel the selection of dir, stop download.
+                title = 'Cancel'
+                msg = textwrap.dedent('''\
+                Cancel.
+
+                Would you like to continue traversing?
+
+                * Tips: [←][→] Move, [Enter] Select, [Esc] No
+                ''')
+                user_choice = easygui.ynbox(msg, title)
+                if not user_choice:
+                    exit(0)
 
     def run(self):
         """
