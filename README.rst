@@ -84,6 +84,21 @@ Travese namespace and download artifacts from GUI.
             "accessToken": ""
         }
 
+Screenshot
+~~~~~~~~~~
+
+* Input Credentials
+
+.. image:: misc/taskcluster_traverse_01.png
+
+* Traverse Namespaces
+
+.. image:: misc/taskcluster_traverse_02.png
+
+* Download Artifacts
+
+.. image:: misc/taskcluster_traverse_03.png
+
 
 SSL InsecurePlatformWarning
 ---------------------------
