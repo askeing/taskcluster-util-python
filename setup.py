@@ -2,7 +2,7 @@ import os
 from setuptools import setup, find_packages
 
 
-VERSION = '0.0.11'
+VERSION = '0.0.12'
 
 # TODO:
 # Bug 1184209 - reference-format: Handle end-points that returns a stream (Discussion)
@@ -35,7 +35,7 @@ if __name__ == '__main__':
           version=VERSION,
           description='Taskcluster Utilities',
           long_description=long_description,
-          keywords='taskcluster utilities download ',
+          keywords='Mozilla B2G FirefoxOS FxOS Taskcluster utilities download ',
           author='Askeing Yen',
           author_email='askeing@gmail.com',
           url='https://github.com/askeing/taskcluster-util-python',

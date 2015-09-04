@@ -1,8 +1,15 @@
 Release History
 ---------------
 
+0.0.12 (2015-09-04)
++++++++++++++++++++
+
+**Bugfixes**
+
+- Fix some description error
+
 0.0.11 (2015-09-04)
-++++++++++++++++++
++++++++++++++++++++
 
 **Features and Improvements**
 
@@ -17,7 +24,7 @@ Release History
 - Fix the temp folder deleted issue when downloading multiple times
 
 0.0.10 (2015-08-04)
-++++++++++++++++++
++++++++++++++++++++
 
 **Features and Improvements**
 

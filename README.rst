@@ -22,6 +22,8 @@ Tools Usages
 taskcluster_download
 ++++++++++++++++++++
 
+Download artifacts from command line.
+
 .. code-block:: bash
 
     usage: taskcluster_download [-h] [--credentials CREDENTIALS]
@@ -47,6 +49,34 @@ taskcluster_download
                             The artifact name on Taskcluster
       -d DEST_DIR, --dest-dir DEST_DIR
                             The dest folder (default: current working folder)
+
+    The tc_credentials.json Template:
+        {
+            "clientId": "",
+            "accessToken": ""
+        }
+
+taskcluster_traverse
+++++++++++++++++++++
+
+Travese namespace and download artifacts from GUI.
+
+.. code-block:: bash
+
+    usage: taskcluster_traverse [-h] [--credentials CREDENTIALS] [-n NAMESPACE]
+                                [-d DEST_DIR] [-v]
+
+    The simple GUI traverse and download tool for Taskcluster.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --credentials CREDENTIALS
+                            The credential JSON file (default: tc_credentials.json)
+      -n NAMESPACE, --namespace NAMESPACE
+                            The namespace of task
+      -d DEST_DIR, --dest-dir DEST_DIR
+                            The dest folder (default: current working folder)
+      -v, --verbose         Turn on verbose output, with all the debug logger.
 
     The tc_credentials.json Template:
         {

@@ -36,7 +36,8 @@ class TraverseRunner(object):
         """
         # argument parser
         taskcluster_credentials = 'tc_credentials.json'
-        parser = argparse.ArgumentParser(prog='taskcluster_download', description='The simple download tool for Taskcluster.',
+        parser = argparse.ArgumentParser(prog='taskcluster_traverse',
+                                         description='The simple GUI traverse and download tool for Taskcluster.',
                                          formatter_class=RawTextHelpFormatter,
                                          epilog=textwrap.dedent('''\
                                          The tc_credentials.json Template:
