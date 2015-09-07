@@ -26,7 +26,9 @@ class TraverseRunner(object):
     _TYPE_NAMESPACE = '[NS]'
     _TYPE_TASK = '[TASK]'
 
-    def __init__(self, connection_options={}):
+    def __init__(self, connection_options=None):
+        if not connection_options:
+            connection_options = {}
         self.connection_options = connection_options
         self.dest_dir = None
 
@@ -66,6 +68,7 @@ class TraverseRunner(object):
             credentials = Credentials.from_file(abs_credentials_path)
             self.connection_options = {'credentials': credentials}
         except Exception as e:
+            logger.warning('No connection options.')
             logger.debug(e)
         # assign the variable
         self.entry_namespace = self.options.namespace

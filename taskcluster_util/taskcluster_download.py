@@ -18,10 +18,12 @@ logger = logging.getLogger(__name__)
 
 
 class DownloadRunner(object):
-    def __init__(self, connection_options={}):
+    def __init__(self, connection_options=None):
         """
         @param connection_options: the options argument for connection. e.g. {'credentials': ...}
         """
+        if not connection_options:
+            connection_options = {}
         self.connection_options = connection_options
         self.namespace = None
         self.task_id = None
@@ -62,9 +64,13 @@ class DownloadRunner(object):
             formatter = '%(levelname)s: %(message)s'
             logging.basicConfig(level=logging.INFO, format=formatter)
         # check credentials file
-        abs_credentials_path = os.path.abspath(options.credentials)
-        credentials = Credentials.from_file(abs_credentials_path)
-        self.connection_options = {'credentials': credentials}
+        try:
+            abs_credentials_path = os.path.abspath(options.credentials)
+            credentials = Credentials.from_file(abs_credentials_path)
+            self.connection_options = {'credentials': credentials}
+        except Exception as e:
+            logger.warning('No connection options.')
+            logger.debug(e)
         # assign the variable
         self.namespace = options.namespace
         self.task_id = options.task_id
