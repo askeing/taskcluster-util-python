@@ -7,6 +7,7 @@ import sys
 import shutil
 import logging
 import tempfile
+from progressbar import *
 
 import taskcluster
 
@@ -19,6 +20,7 @@ class Downloader(object):
         """
         Ref: U{http://docs.taskcluster.net/queue/}
         """
+        self.temp_dir = tempfile.mkdtemp(prefix='tmp_tcdl_')
         self.queue = taskcluster.Queue(options)
 
     def get_latest_artifacts(self, task_id):
@@ -51,22 +53,19 @@ class Downloader(object):
         chunk_size = 1024
         current_size = 0
         # download file into temp folder
-        self.temp_dir = tempfile.mkdtemp(prefix='tmp_tcdl_')
         temp_local_file = os.path.join(self.temp_dir, base_filename)
         with open(temp_local_file, 'wb') as fd:
+            progress_format = [Bar(), ' ', Percentage(), ', ', SimpleProgress(), ', ', ETA(), ' ', FileTransferSpeed()]
+            progress = ProgressBar(widgets=progress_format, maxval=total_length).start()
             for chunk in response.iter_content(chunk_size):
                 current_size = current_size + len(chunk)
                 fd.write(chunk)
                 if total_length > 0:
-                    progress = int((50 * current_size) / total_length)
-                    if progress <= 50:
-                        sys.stdout.write('\r[%s%s] %s/%s' % ('#' * progress, ' ' * (50 - progress), str(current_size), str(total_length)))
-                        sys.stdout.flush()
-                    else:
-                        sys.stdout.write('\r[%s] %s/%s' % ('#' * 50, str(current_size), str(total_length)))
-                        sys.stdout.flush()
-        sys.stdout.write('\nDone.\n\n')
-        sys.stdout.flush()
+                    if current_size > total_length:
+                        # the content-length is not correct
+                        progress.maxval = current_size + chunk_size
+                    progress.update(current_size)
+        progress.finish()
 
         # move file to dest folder
         final_file_path = temp_local_file

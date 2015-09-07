@@ -8,8 +8,9 @@ VERSION = '0.0.12'
 # Bug 1184209 - reference-format: Handle end-points that returns a stream (Discussion)
 # when Bug 1184209 is fixed, then modify the taskcluster version to >=0.0.21
 install_requires = [
-  'easygui==0.97.2',
-  'taskcluster==0.0.21',
+    'easygui==0.97.2',
+    'taskcluster==0.0.21',
+    'progressbar',
 ]
 
 here = os.path.dirname(os.path.abspath(__file__))
