@@ -3,8 +3,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import os
-import logging
 import argparse
 import textwrap
 from argparse import RawTextHelpFormatter
@@ -12,7 +10,6 @@ from argparse import RawTextHelpFormatter
 from util.finder import *
 from util.downloader import *
 from model.credentials import Credentials
-
 
 logger = logging.getLogger(__name__)
 
@@ -29,6 +26,7 @@ class DownloadRunner(object):
         self.task_id = None
         self.aritfact_name = None
         self.dest_dir = None
+        self.artifact_downloader = None
 
     def cli(self):
         """
@@ -36,7 +34,8 @@ class DownloadRunner(object):
         """
         # argument parser
         taskcluster_credentials = 'tc_credentials.json'
-        parser = argparse.ArgumentParser(prog='taskcluster_download', description='The simple download tool for Taskcluster.',
+        parser = argparse.ArgumentParser(prog='taskcluster_download',
+                                         description='The simple download tool for Taskcluster.',
                                          formatter_class=RawTextHelpFormatter,
                                          epilog=textwrap.dedent('''\
                                          The tc_credentials.json Template:
@@ -45,14 +44,18 @@ class DownloadRunner(object):
                                                  "accessToken": ""
                                              }
                                          '''))
-        parser.add_argument('--credentials', action='store', default=taskcluster_credentials, dest='credentials', help='The credential JSON file (default: {})'.format(taskcluster_credentials))
+        parser.add_argument('--credentials', action='store', default=taskcluster_credentials, dest='credentials',
+                            help='The credential JSON file (default: {})'.format(taskcluster_credentials))
         task_group = parser.add_mutually_exclusive_group(required=True)
         task_group.add_argument('-n', '--namespace', action='store', dest='namespace', help='The namespace of task')
         task_group.add_argument('-t', '--taskid', action='store', dest='task_id', help='The taskId of task')
         artifact_group = parser.add_argument_group('Download Artifact', 'The artifact name and dest folder')
-        artifact_group.add_argument('-a', '--artifact', action='store', dest='aritfact_name', help='The artifact name on Taskcluster')
-        artifact_group.add_argument('-d', '--dest-dir', action='store', dest='dest_dir', help='The dest folder (default: current working folder)')
-        parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False, help='Turn on verbose output, with all the debug logger.')
+        artifact_group.add_argument('-a', '--artifact', action='store', dest='aritfact_name',
+                                    help='The artifact name on Taskcluster')
+        artifact_group.add_argument('-d', '--dest-dir', action='store', dest='dest_dir',
+                                    help='The dest folder (default: current working folder)')
+        parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False,
+                            help='Turn on verbose output, with all the debug logger.')
 
         # parser the argv
         options = parser.parse_args(sys.argv[1:])
@@ -78,14 +81,13 @@ class DownloadRunner(object):
         self.dest_dir = options.dest_dir
         return self
 
-    def show_latest_artifacts(self, artifact_downloader, task_id):
+    def show_latest_artifacts(self, task_id):
         """
         Print the artifacts by given TaskId.
-        @param artifact_downloader: Downloader object with connection options.
         @param task_id: the given TaskId.
         """
         logger.info('Getting latest artifacts of TaskID {} ...'.format(task_id))
-        ret = artifact_downloader.get_latest_artifacts(task_id)
+        ret = self.artifact_downloader.get_latest_artifacts(task_id)
         artifacts_list = ret.get('artifacts')
         width = 30
         print('{}| {}'.format('[Type]'.ljust(width), '[Name]'.ljust(width)))
@@ -113,14 +115,14 @@ class DownloadRunner(object):
         else:
             task_id = self.task_id
 
-        artifact_downloader = Downloader(self.connection_options)
+        self.artifact_downloader = Downloader(self.connection_options)
         if self.aritfact_name is None:
             # no artifact_name, then get the latest artifacts list
-            self.show_latest_artifacts(artifact_downloader, task_id)
+            self.show_latest_artifacts(task_id)
         else:
             # has artifact_name, then download it
             logger.info('Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.aritfact_name, task_id))
-            local_file = artifact_downloader.download_latest_artifact(task_id, self.aritfact_name, self.dest_dir)
+            local_file = self.artifact_downloader.download_latest_artifact(task_id, self.aritfact_name, self.dest_dir)
             logger.info('Download [{}] from TaskID [{}] to [{}] done.'.format(self.aritfact_name, task_id, local_file))
 
 

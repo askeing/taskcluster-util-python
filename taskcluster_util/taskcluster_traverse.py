@@ -4,24 +4,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import os
-import logging
 import argparse
 import textwrap
 from argparse import RawTextHelpFormatter
 import json
-import easygui
 
+import easygui
 from util.finder import *
 from util.downloader import *
 from model.credentials import Credentials
-
 
 logger = logging.getLogger(__name__)
 
 
 class TraverseRunner(object):
-
     _PARENT_NODE = '..'
     _TYPE_NAMESPACE = '[NS]'
     _TYPE_TASK = '[TASK]'
@@ -31,6 +27,10 @@ class TraverseRunner(object):
             connection_options = {}
         self.connection_options = connection_options
         self.dest_dir = None
+        self.entry_namespace = ''
+        self.downloaded_file_list = []
+        self.task_finder = None
+        self.artifact_downloader = None
 
     def cli(self):
         """
@@ -48,15 +48,19 @@ class TraverseRunner(object):
                                                  "accessToken": ""
                                              }
                                          '''))
-        parser.add_argument('--credentials', action='store', default=taskcluster_credentials, dest='credentials', help='The credential JSON file (default: {})'.format(taskcluster_credentials))
-        parser.add_argument('-n', '--namespace', action='store', dest='namespace', default='', help='The namespace of task')
-        parser.add_argument('-d', '--dest-dir', action='store', dest='dest_dir', help='The dest folder (default: current working folder)')
-        parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False, help='Turn on verbose output, with all the debug logger.')
+        parser.add_argument('--credentials', action='store', default=taskcluster_credentials, dest='credentials',
+                            help='The credential JSON file (default: {})'.format(taskcluster_credentials))
+        parser.add_argument('-n', '--namespace', action='store', dest='namespace', default='',
+                            help='The namespace of task')
+        parser.add_argument('-d', '--dest-dir', action='store', dest='dest_dir',
+                            help='The dest folder (default: current working folder)')
+        parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False,
+                            help='Turn on verbose output, with all the debug logger.')
 
         # parser the argv
-        self.options = parser.parse_args(sys.argv[1:])
+        options = parser.parse_args(sys.argv[1:])
         # setup the logging config
-        if self.options.verbose is True:
+        if options.verbose is True:
             verbose_formatter = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
             logging.basicConfig(level=logging.DEBUG, format=verbose_formatter)
         else:
@@ -64,25 +68,24 @@ class TraverseRunner(object):
             logging.basicConfig(level=logging.INFO, format=formatter)
         # check credentials file
         try:
-            abs_credentials_path = os.path.abspath(self.options.credentials)
+            abs_credentials_path = os.path.abspath(options.credentials)
             credentials = Credentials.from_file(abs_credentials_path)
             self.connection_options = {'credentials': credentials}
         except Exception as e:
             logger.warning('No connection options.')
             logger.debug(e)
         # assign the variable
-        self.entry_namespace = self.options.namespace
-        self.dest_dir = self.options.dest_dir
+        self.entry_namespace = options.namespace
+        self.dest_dir = options.dest_dir
         return self
 
-    def _check_target_dir(self, dest_dir):
+    def _check_target_dir(self):
         """
         GUI: show GUI for selecting the target folder when there is no given "--dest-dir" argument.
-        @param dest_dir: the target folder from cli.
         """
-        if not dest_dir:
+        if not self.dest_dir:
             title = 'Select Target Folder'
-            return easygui.diropenbox(title=title, default=os.getcwd())
+            self.dest_dir = easygui.diropenbox(title=title, default=os.getcwd())
 
     def _check_credentials(self):
         """
@@ -106,7 +109,8 @@ class TraverseRunner(object):
                 elif 'clientId' in raw_credentials_dict:
                     self.connection_options = {'credentials': raw_credentials_dict}
                 logger.debug('connection options: {}'.format(self.connection_options))
-            except:
+            except Exception as e:
+                logger.debug(e)
                 self.connection_options = {}
                 logger.debug('Can not load connection options from user input.')
                 title = 'Load Options Error'
@@ -184,7 +188,8 @@ class TraverseRunner(object):
             easygui.msgbox(msg, title)
             return []
 
-    def gui_select_namespaces(self, current_namespace, sub_namespace_list):
+    @staticmethod
+    def gui_select_namespaces(current_namespace, sub_namespace_list):
         """
         GUI: select the namespace.
         @param current_namespace: the current namespace's name.
@@ -210,15 +215,15 @@ class TraverseRunner(object):
         choice_artifact_list = self.gui_select_artifacts(task_name, task_id)
         if choice_artifact_list:
             # if there is no target dir, then show gui for user
-            self.dest_dir = self._check_target_dir(self.dest_dir)
+            self._check_target_dir()
             if self.dest_dir:
-                local_file_list = []
+                self.downloaded_file_list = []
                 # after user select the dir, download artifacts
                 for item in choice_artifact_list:
                     logger.info('Download: {}'.format(item))
                     try:
                         local_file = self.artifact_downloader.download_latest_artifact(task_id, item, self.dest_dir)
-                        local_file_list.append(local_file)
+                        self.downloaded_file_list.append(local_file)
                     except Exception as e:
                         title = 'Download Failed'
                         msg = textwrap.dedent('''\
@@ -229,7 +234,7 @@ class TraverseRunner(object):
                         * Tips: [Enter] OK
                         ''').format(item, e)
                         easygui.msgbox(msg, title)
-                self.do_after_download(local_file_list)
+                self.do_after_download()
             else:
                 # if user cancel the selection of dir, stop download.
                 title = 'Cancel'
@@ -244,11 +249,12 @@ class TraverseRunner(object):
                 if not user_choice:
                     exit(0)
 
-    def do_after_download(self, downloaded_file_list):
+    def do_after_download(self):
         """
         Do something after downloading finished.
-        @param downloaded_file_list: the downloaded file path list.
         """
+        for f in self.downloaded_file_list:
+            logger.debug('Download {}'.format(f))
         title = 'Download'
         msg = textwrap.dedent('''\
         Finished.
