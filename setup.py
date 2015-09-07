@@ -2,7 +2,7 @@ import os
 from setuptools import setup, find_packages
 
 
-VERSION = '0.0.12'
+VERSION = '0.0.13'
 
 # TODO:
 # Bug 1184209 - reference-format: Handle end-points that returns a stream (Discussion)
