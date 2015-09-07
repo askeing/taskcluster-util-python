@@ -3,7 +3,15 @@ credential.json
 tc_credential.json
 credentials.json
 tc_credentials.json
-env-python
+env-*
+docs/
+
+
+# OS X
+.DS_Store
+
+# PyCharm
+.idea/
 
 # Vim
 [._]*.s[a-w][a-z]
