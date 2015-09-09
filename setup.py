@@ -36,7 +36,7 @@ if __name__ == '__main__':
           version=VERSION,
           description='Taskcluster Utilities',
           long_description=long_description,
-          keywords='Mozilla B2G FirefoxOS FxOS Taskcluster utilities download ',
+          keywords='mozilla b2g firefoxos fxos firefox taskcluster utilities download ',
           author='Askeing Yen',
           author_email='askeing@gmail.com',
           url='https://github.com/askeing/taskcluster-util-python',
