@@ -7,7 +7,7 @@ import logging
 import taskcluster
 
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 class TaskFinder(object):
@@ -85,21 +85,24 @@ class TaskFinder(object):
         """
         result_list = []
         continuationToken = None
-        while True:
-            # prepare payload
-            payload = {TaskFinder._LIMIT: limit}
-            if continuationToken:
-                payload[TaskFinder._CONTINUATION_TOKEN] = continuationToken
-            # query API
-            ret = self.index.listNamespaces(ns_node, payload)
-            for item in ret.get(TaskFinder._NAMESPACES):
-                if item.get(TaskFinder._NAMESPACE) != '':
-                    result_list.append(item.get(TaskFinder._NAMESPACE))
-            # if there is continuationToken, then query API agian with token.
-            if not ret.get(TaskFinder._CONTINUATION_TOKEN):
-                break
-            else:
-                continuationToken = ret.get(TaskFinder._CONTINUATION_TOKEN)
+        try:
+            while True:
+                # prepare payload
+                payload = {TaskFinder._LIMIT: limit}
+                if continuationToken:
+                    payload[TaskFinder._CONTINUATION_TOKEN] = continuationToken
+                # query API
+                ret = self.index.listNamespaces(ns_node, payload)
+                for item in ret.get(TaskFinder._NAMESPACES):
+                    if item.get(TaskFinder._NAMESPACE) != '':
+                        result_list.append(item.get(TaskFinder._NAMESPACE))
+                # if there is continuationToken, then query API agian with token.
+                if not ret.get(TaskFinder._CONTINUATION_TOKEN):
+                    break
+                else:
+                    continuationToken = ret.get(TaskFinder._CONTINUATION_TOKEN)
+        except Exception as e:
+            logger.debug(e)
         return result_list
 
     def get_tasks(self, ns_node='', limit=1000):
@@ -111,21 +114,24 @@ class TaskFinder(object):
         """
         result_list = []
         continuationToken = None
-        while True:
-            # prepare payload
-            payload = {TaskFinder._LIMIT: limit}
-            if continuationToken:
-                payload[TaskFinder._CONTINUATION_TOKEN] = continuationToken
-            # query API
-            ret = self.index.listTasks(ns_node, payload)
-            for item in ret.get(TaskFinder._TASKS):
-                if item.get(TaskFinder._TASK) != '':
-                    result_list.append((item.get(TaskFinder._NAMESPACE), item.get(TaskFinder._TASK_ID)))
-            # if there is continuationToken, then query API agian with token.
-            if not ret.get(TaskFinder._CONTINUATION_TOKEN):
-                break
-            else:
-                continuationToken = ret.get(TaskFinder._CONTINUATION_TOKEN)
+        try:
+            while True:
+                # prepare payload
+                payload = {TaskFinder._LIMIT: limit}
+                if continuationToken:
+                    payload[TaskFinder._CONTINUATION_TOKEN] = continuationToken
+                # query API
+                ret = self.index.listTasks(ns_node, payload)
+                for item in ret.get(TaskFinder._TASKS):
+                    if item.get(TaskFinder._TASK) != '':
+                        result_list.append((item.get(TaskFinder._NAMESPACE), item.get(TaskFinder._TASK_ID)))
+                # if there is continuationToken, then query API agian with token.
+                if not ret.get(TaskFinder._CONTINUATION_TOKEN):
+                    break
+                else:
+                    continuationToken = ret.get(TaskFinder._CONTINUATION_TOKEN)
+        except Exception as e:
+            logger.debug(e)
         return result_list
 
     def get_namespaces_and_tasks(self, ns_node='', limit=1000):
