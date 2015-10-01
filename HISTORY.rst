@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+0.0.14 (2015-10-01)
++++++++++++++++++++
+
+**Bugfixes**
+
+- Fix the internal server error (cause by taskcluster v0.0.21).
+
 0.0.13 (2015-09-07)
 +++++++++++++++++++
 
