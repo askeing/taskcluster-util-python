@@ -6,6 +6,7 @@ import os
 import sys
 import shutil
 import logging
+import urllib2
 import tempfile
 from progressbar import *
 
@@ -20,7 +21,6 @@ class Downloader(object):
         """
         Ref: U{http://docs.taskcluster.net/queue/}
         """
-        self.temp_dir = tempfile.mkdtemp(prefix='tmp_tcdl_')
         self.queue = taskcluster.Queue(options)
 
     def get_latest_artifacts(self, task_id):
@@ -40,25 +40,29 @@ class Downloader(object):
         @param dest_dir: the target local folder.
         @return: the downloaded file path.
         """
+        temp_dir = tempfile.mkdtemp(prefix='tmp_tcdl_')
         base_filename = os.path.basename(full_filename)
 
-        ret = self.queue.getLatestArtifact(task_id, full_filename)
-        response = ret.get('response')
+        signed_url = self.queue.buildSignedUrl('getLatestArtifact', task_id, full_filename)
+        url_handler = urllib2.urlopen(signed_url)
 
         total_length = 0
-        content_length = response.headers.get('content-length')
+        content_length = url_handler.info().getheader('Content-Length').strip()
         if content_length is not None:
             total_length = int(content_length)
 
         chunk_size = 1024
         current_size = 0
         # download file into temp folder
-        temp_local_file = os.path.join(self.temp_dir, base_filename)
+        temp_local_file = os.path.join(temp_dir, base_filename)
         with open(temp_local_file, 'wb') as fd:
-            progress_format = [Bar(), ' ', Percentage(), ', ', SimpleProgress(), ', ', ETA(), ' ', FileTransferSpeed()]
+            progress_format = ['Progress: ', AnimatedMarker(), ' ', Percentage(), ', ', SimpleProgress(), ', ', ETA(), ' ', FileTransferSpeed()]
             progress = ProgressBar(widgets=progress_format, maxval=total_length).start()
-            for chunk in response.iter_content(chunk_size):
+            while True:
+                chunk = url_handler.read(chunk_size)
                 current_size = current_size + len(chunk)
+                if not chunk:
+                    break
                 fd.write(chunk)
                 if total_length > 0:
                     if current_size > total_length:
@@ -75,7 +79,7 @@ class Downloader(object):
             final_file_path = os.path.join(abs_dest_dir, base_filename)
             # remove temp folder
             try:
-                shutil.rmtree(self.temp_dir)  # delete directory
+                shutil.rmtree(temp_dir)  # delete directory
             except OSError:
                 logger.warning('Can not remove temporary folder: {}'.format(self.temp_dir))
         except Exception as e:

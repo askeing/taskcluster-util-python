@@ -225,6 +225,7 @@ class TraverseRunner(object):
                         local_file = self.artifact_downloader.download_latest_artifact(task_id, item, self.dest_dir)
                         self.downloaded_file_list.append(local_file)
                     except Exception as e:
+                        logger.error(e)
                         title = 'Download Failed'
                         msg = textwrap.dedent('''\
                         Can not download: [{}]

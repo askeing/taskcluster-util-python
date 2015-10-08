@@ -1,6 +1,14 @@
 Release History
 ---------------
 
+0.0.15 (2015-10-08)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Upgrade the taskcluster library to 0.0.27, which fixed the bewit issue.
+- Download artifacts by Signed URL, not API method.
+
 0.0.14 (2015-10-01)
 +++++++++++++++++++
 

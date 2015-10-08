@@ -2,14 +2,11 @@ import os
 from setuptools import setup, find_packages
 
 
-VERSION = '0.0.14'
+VERSION = '0.0.15'
 
-# TODO:
-# Bug 1184209 - reference-format: Handle end-points that returns a stream (Discussion)
-# when Bug 1184209 is fixed, then modify the taskcluster version to >=0.0.21
 install_requires = [
     'easygui==0.97.2',
-    'taskcluster==0.0.21',
+    'taskcluster==0.0.27',
     'progressbar',
 ]
 
