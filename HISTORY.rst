@@ -1,7 +1,14 @@
 Release History
 ---------------
 
-0.0.15 (2015-10-08)
+0.0.16 (2015-10-13)
++++++++++++++++++++
+
+**Bugfixes**
+
+- Fix the issue of downloading public artifact when no credentials
+
+0.0.15 (2015-10-02)
 +++++++++++++++++++
 
 **Features and Improvements**
