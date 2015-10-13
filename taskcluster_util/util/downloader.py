@@ -43,7 +43,12 @@ class Downloader(object):
         temp_dir = tempfile.mkdtemp(prefix='tmp_tcdl_')
         base_filename = os.path.basename(full_filename)
 
-        signed_url = self.queue.buildSignedUrl('getLatestArtifact', task_id, full_filename)
+        # if there is no credentials, then try to download artifact as public file.
+        # - Has credentials => buildSignedUrl()
+        # - No credentials => buildUrl()
+        signed_url = self.queue.buildSignedUrl('getLatestArtifact', task_id, full_filename) \
+            if self.queue._hasCredentials() \
+            else self.queue.buildUrl('getLatestArtifact', task_id, full_filename)
         url_handler = urllib2.urlopen(signed_url)
 
         total_length = 0
