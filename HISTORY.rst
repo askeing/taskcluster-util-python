@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+0.0.17 (2015-10-27)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Add the credentials information.
+
 0.0.16 (2015-10-13)
 +++++++++++++++++++
 
