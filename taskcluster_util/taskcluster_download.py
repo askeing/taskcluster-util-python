@@ -41,7 +41,9 @@ class DownloadRunner(object):
                                          The tc_credentials.json Template:
                                              {
                                                  "clientId": "",
-                                                 "accessToken": ""
+                                                 "accessToken": "",
+                                                 "certificate":
+                                                     {"version":1,"scopes":["*"],"start":xxx,"expiry":xxx,"seed":"xxx","signature":"xxx"}
                                              }
                                          '''))
         parser.add_argument('--credentials', action='store', default=taskcluster_credentials, dest='credentials',

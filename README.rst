@@ -19,6 +19,14 @@ To install **taskcluster_util**, simply:
 Tools Usages
 ------------
 
+Temporary Credentials
++++++++++++++++++++++
+
+You can get your temporary credentials from https://auth.taskcluster.net/ (using Persona with LDAP account).
+
+That will remain valid for 31 days.
+
+
 taskcluster_download
 ++++++++++++++++++++
 
@@ -53,8 +61,11 @@ Download artifacts from command line.
     The tc_credentials.json Template:
         {
             "clientId": "",
-            "accessToken": ""
+            "accessToken": "",
+            "certificate":
+                {"version":1,"scopes":["*"],"start":xxx,"expiry":xxx,"seed":"xxx","signature":"xxx"}
         }
+
 
 taskcluster_traverse
 ++++++++++++++++++++
@@ -81,8 +92,11 @@ Travese namespace and download artifacts from GUI.
     The tc_credentials.json Template:
         {
             "clientId": "",
-            "accessToken": ""
+            "accessToken": "",
+            "certificate":
+                {"version":1,"scopes":["*"],"start":xxx,"expiry":xxx,"seed":"xxx","signature":"xxx"}
         }
+
 
 Screenshot
 ~~~~~~~~~~
