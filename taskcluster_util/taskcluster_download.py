@@ -10,6 +10,7 @@ from argparse import RawTextHelpFormatter
 from util.finder import *
 from util.downloader import *
 from model.credentials import Credentials
+from model.login_policy import LOGGING_POLICY
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,8 @@ class DownloadRunner(object):
         self.dest_dir = None
         self.artifact_downloader = None
         self.taskcluster_credentials = os.path.join(os.path.expanduser('~'), 'tc_credentials.json')
+        self.should_display_signed_url_only = False
+        self.is_verbose = False
 
     def parser(self):
         # argument parser
@@ -59,6 +62,7 @@ class DownloadRunner(object):
                                     help='The artifact name on Taskcluster')
         artifact_group.add_argument('-d', '--dest-dir', action='store', dest='dest_dir',
                                     help='The dest folder (default: current working folder)')
+        artifact_group.add_argument('-u', '--signed-url-only', action='store_true', help='Retrieve the signed url and display it. No download is done')
         parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False,
                             help='Turn on verbose output, with all the debug logger.')
         return parser.parse_args(sys.argv[1:])
@@ -69,14 +73,28 @@ class DownloadRunner(object):
         """
         # parser the argv
         options = self.parser()
-        # setup the logging config
-        if options.verbose is True:
-            verbose_formatter = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            logging.basicConfig(level=logging.DEBUG, format=verbose_formatter)
+
+        self.namespace = options.namespace
+        self.task_id = options.task_id
+        self.aritfact_name = options.aritfact_name
+        self.dest_dir = options.dest_dir
+        self.is_verbose = options.verbose
+        self.should_display_signed_url_only = options.signed_url_only
+
+        self._configure_login()
+        self._check_crendentials_file(options)
+        return self
+
+    def _configure_login(self):
+        if self.is_verbose is True:
+            logging_config = LOGGING_POLICY['verbose']
+        elif self.should_display_signed_url_only is True:
+            logging_config = LOGGING_POLICY['no_logs']
         else:
-            formatter = '%(levelname)s: %(message)s'
-            logging.basicConfig(level=logging.INFO, format=formatter)
-        # check credentials file
+            logging_config = LOGGING_POLICY['default']
+        logging.basicConfig(level=logging_config['level'], format=logging_config['format'])
+
+    def _check_crendentials_file(self, options):
         try:
             abs_credentials_path = os.path.abspath(options.credentials)
             credentials = Credentials.from_file(abs_credentials_path)
@@ -85,12 +103,6 @@ class DownloadRunner(object):
         except Exception as e:
             logger.warning('No credentials. Run with "--help" for more information.')
             logger.debug(e)
-        # assign the variable
-        self.namespace = options.namespace
-        self.task_id = options.task_id
-        self.aritfact_name = options.aritfact_name
-        self.dest_dir = options.dest_dir
-        return self
 
     def show_latest_artifacts(self, task_id):
         """
@@ -130,6 +142,9 @@ class DownloadRunner(object):
         if self.aritfact_name is None:
             # no artifact_name, then get the latest artifacts list
             self.show_latest_artifacts(task_id)
+        elif self.should_display_signed_url_only:
+            url = self.artifact_downloader.get_signed_url(task_id, self.aritfact_name)
+            print url
         else:
             # has artifact_name, then download it
             logger.info('Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.aritfact_name, task_id))
