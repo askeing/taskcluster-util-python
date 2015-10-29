@@ -25,7 +25,7 @@ class DownloadRunner(object):
         self.connection_options = connection_options
         self.namespace = None
         self.task_id = None
-        self.aritfact_name = None
+        self.artifact_name = None
         self.dest_dir = None
         self.artifact_downloader = None
         self.taskcluster_credentials = os.path.join(os.path.expanduser('~'), 'tc_credentials.json')
@@ -76,7 +76,7 @@ class DownloadRunner(object):
 
         self.namespace = options.namespace
         self.task_id = options.task_id
-        self.aritfact_name = options.aritfact_name
+        self.artifact_name = options.aritfact_name
         self.dest_dir = options.dest_dir
         self.is_verbose = options.verbose
         self.should_display_signed_url_only = options.signed_url_only
@@ -139,17 +139,16 @@ class DownloadRunner(object):
             task_id = self.task_id
 
         self.artifact_downloader = Downloader(self.connection_options)
-        if self.aritfact_name is None:
+        if self.artifact_name is None:
             # no artifact_name, then get the latest artifacts list
             self.show_latest_artifacts(task_id)
-        elif self.should_display_signed_url_only:
-            url = self.artifact_downloader.get_signed_url(task_id, self.aritfact_name)
-            print url
+        elif self.should_display_signed_url_only is True:
+            print self.artifact_downloader.get_signed_url(task_id, self.artifact_name)
         else:
             # has artifact_name, then download it
-            logger.info('Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.aritfact_name, task_id))
-            local_file = self.artifact_downloader.download_latest_artifact(task_id, self.aritfact_name, self.dest_dir)
-            logger.info('Download [{}] from TaskID [{}] to [{}] done.'.format(self.aritfact_name, task_id, local_file))
+            logger.info('Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.artifact_name, task_id))
+            local_file = self.artifact_downloader.download_latest_artifact(task_id, self.artifact_name, self.dest_dir)
+            logger.info('Download [{}] from TaskID [{}] to [{}] done.'.format(self.artifact_name, task_id, local_file))
 
 
 def main():
