@@ -169,6 +169,8 @@ class TraverseRunner(object):
             choices = self._get_latest_artifacts(task_id)
             title = 'Select Artifacts'
             if task_name:
+                logger.info('Task Namespace: {}'.format(task_name))
+                logger.info('Task ID: {}'.format(task_id))
                 msg = textwrap.dedent('''\
                 Please select the artifacts you want to download.
 
@@ -178,6 +180,7 @@ class TraverseRunner(object):
                 * Tips: [↑][↓] Move, [Space] Select, [Enter] OK
                 ''').format(task_name, task_id)
             else:
+                logger.info('Task ID: {}'.format(task_id))
                 msg = textwrap.dedent('''\
                 Please select the artifacts you want to download.
 
@@ -264,16 +267,19 @@ class TraverseRunner(object):
         """
         Do something after downloading finished.
         """
+        files_string = '\n'
         for f in self.downloaded_file_list:
-            logger.debug('Download {}'.format(f))
+            logger.info('Download to {}'.format(f))
+            files_string = '{}[{}]\n'.format(files_string, f)
         title = 'Download'
         msg = textwrap.dedent('''\
         Finished.
+        {}
 
         Would you like to continue traversing?
 
         * Tips: [←][→] Move, [Enter] Select, [Esc] No
-        ''')
+        '''.format(files_string))
         user_choice = easygui.ynbox(msg, title)
         if not user_choice:
             exit(0)
