@@ -4,10 +4,11 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import os
+import json
 import argparse
 import textwrap
 from argparse import RawTextHelpFormatter
-import json
 
 import easygui
 from util.finder import *
@@ -31,13 +32,13 @@ class TraverseRunner(object):
         self.downloaded_file_list = []
         self.task_finder = None
         self.artifact_downloader = None
+        self.taskcluster_credentials = os.path.join(os.path.expanduser('~'), 'tc_credentials.json')
 
     def cli(self):
         """
         Handle the argument parse, and the return the instance itself.
         """
         # argument parser
-        taskcluster_credentials = 'tc_credentials.json'
         parser = argparse.ArgumentParser(prog='taskcluster_traverse',
                                          description='The simple GUI traverse and download tool for Taskcluster.',
                                          formatter_class=RawTextHelpFormatter,
@@ -46,12 +47,18 @@ class TraverseRunner(object):
                                              {
                                                  "clientId": "",
                                                  "accessToken": "",
-                                                 "certificate":
-                                                     {"version":1,"scopes":["*"],"start":xxx,"expiry":xxx,"seed":"xxx","signature":"xxx"}
+                                                 "certificate": {
+                                                     "version":1,
+                                                     "scopes":["*"],
+                                                     "start":xxx,
+                                                     "expiry":xxx,
+                                                     "seed":"xxx",
+                                                     "signature":"xxx"
+                                                 }
                                              }
                                          '''))
-        parser.add_argument('--credentials', action='store', default=taskcluster_credentials, dest='credentials',
-                            help='The credential JSON file (default: {})'.format(taskcluster_credentials))
+        parser.add_argument('--credentials', action='store', default=self.taskcluster_credentials, dest='credentials',
+                            help='The credential JSON file \n(default: {})'.format(self.taskcluster_credentials))
         parser.add_argument('-n', '--namespace', action='store', dest='namespace', default='',
                             help='The namespace of task')
         parser.add_argument('-d', '--dest-dir', action='store', dest='dest_dir',
@@ -73,8 +80,9 @@ class TraverseRunner(object):
             abs_credentials_path = os.path.abspath(options.credentials)
             credentials = Credentials.from_file(abs_credentials_path)
             self.connection_options = {'credentials': credentials}
+            logger.info('Load Credentials from {}'.format(abs_credentials_path))
         except Exception as e:
-            logger.warning('No connection options.')
+            logger.warning('No credentials. Run with "--help" for more information.')
             logger.debug(e)
         # assign the variable
         self.entry_namespace = options.namespace
@@ -97,19 +105,19 @@ class TraverseRunner(object):
             title = 'Enter Credentials'
             msg = textwrap.dedent('''\
             Please enter your Credentials for downloading.
-            Or you can put it in "<CURRENT_DIR>/tc_credentials.json" file.
-
-            e.g. {"clientId": "XXX", "accessToken": "XXX" ...}
+            Or you can put it in "{}" file.
 
             * Tips: [←][→] Move, [Enter] Select, [Esc] Cancel
-            ''')
-            ret = easygui.enterbox(msg, title)
+            '''.format(self.taskcluster_credentials))
+            field_names = ['clientId', 'accessToken', 'certificate']
+            field_values = []
+            field_values = easygui.multenterbox(msg, title, field_names)
             try:
-                raw_credentials_dict = json.loads(ret)
-                if 'credentials' in raw_credentials_dict:
-                    self.connection_options = raw_credentials_dict
-                elif 'clientId' in raw_credentials_dict:
-                    self.connection_options = {'credentials': raw_credentials_dict}
+                raw_clientId = field_values[0]
+                raw_accessToken = field_values[1]
+                raw_certificate = json.loads(field_values[2])
+                credentials = Credentials(clientId=raw_clientId, accessToken=raw_accessToken, certificate=raw_certificate)
+                self.connection_options = {'credentials': credentials}
                 logger.debug('connection options: {}'.format(self.connection_options))
             except Exception as e:
                 logger.debug(e)

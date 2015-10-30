@@ -27,13 +27,13 @@ class DownloadRunner(object):
         self.aritfact_name = None
         self.dest_dir = None
         self.artifact_downloader = None
+        self.taskcluster_credentials = os.path.join(os.path.expanduser('~'), 'tc_credentials.json')
 
     def cli(self):
         """
         This method will parse the argument for CLI.
         """
         # argument parser
-        taskcluster_credentials = 'tc_credentials.json'
         parser = argparse.ArgumentParser(prog='taskcluster_download',
                                          description='The simple download tool for Taskcluster.',
                                          formatter_class=RawTextHelpFormatter,
@@ -42,12 +42,18 @@ class DownloadRunner(object):
                                              {
                                                  "clientId": "",
                                                  "accessToken": "",
-                                                 "certificate":
-                                                     {"version":1,"scopes":["*"],"start":xxx,"expiry":xxx,"seed":"xxx","signature":"xxx"}
+                                                 "certificate": {
+                                                     "version":1,
+                                                     "scopes":["*"],
+                                                     "start":xxx,
+                                                     "expiry":xxx,
+                                                     "seed":"xxx",
+                                                     "signature":"xxx"
+                                                 }
                                              }
                                          '''))
-        parser.add_argument('--credentials', action='store', default=taskcluster_credentials, dest='credentials',
-                            help='The credential JSON file (default: {})'.format(taskcluster_credentials))
+        parser.add_argument('--credentials', action='store', default=self.taskcluster_credentials, dest='credentials',
+                            help='The credential JSON file\n(default: {})'.format(self.taskcluster_credentials))
         task_group = parser.add_mutually_exclusive_group(required=True)
         task_group.add_argument('-n', '--namespace', action='store', dest='namespace', help='The namespace of task')
         task_group.add_argument('-t', '--taskid', action='store', dest='task_id', help='The taskId of task')
@@ -73,8 +79,9 @@ class DownloadRunner(object):
             abs_credentials_path = os.path.abspath(options.credentials)
             credentials = Credentials.from_file(abs_credentials_path)
             self.connection_options = {'credentials': credentials}
+            logger.info('Load Credentials from {}'.format(abs_credentials_path))
         except Exception as e:
-            logger.warning('No connection options.')
+            logger.warning('No credentials. Run with "--help" for more information.')
             logger.debug(e)
         # assign the variable
         self.namespace = options.namespace

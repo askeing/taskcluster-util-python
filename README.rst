@@ -24,7 +24,36 @@ Temporary Credentials
 
 You can get your temporary credentials from https://auth.taskcluster.net/ (using Persona with LDAP account).
 
-That will remain valid for 31 days.
+The temporary credentials will remain valid for 31 days.
+
+tc_credentials.json
+~~~~~~~~~~~~~~~~~~~
+
+You can put the credentials into **tc_credentials.json** file under your home folder.
+
+.. code-block:: bash
+
+	$ <YOUR_EDITOR> ~/tc_credentials.json
+
+The file format will be:
+
+.. code-block::
+
+	{
+		"clientId": "<YOUR_CLIENTID>",
+		"accessToken": "<YOUR_ACCESSTOKEN>",
+		"certificate": <YOUR_CERTIFICATE>
+	}
+
+Here's a simple example:
+
+.. code-block::
+
+	{
+		"clientId": "foo-XXX",
+		"accessToken": "hello-world-XXX",
+		"certificate": {"version":1,"scopes":["*"],"start":1,"expiry":9,"seed":"hello","signature":"world="}
+	}
 
 
 taskcluster_download
@@ -43,7 +72,8 @@ Download artifacts from command line.
     optional arguments:
       -h, --help            show this help message and exit
       --credentials CREDENTIALS
-                            The credential JSON file (default: tc_credentials.json)
+                            The credential JSON file
+                            (default: <YOUR_HOME>/tc_credentials.json)
       -n NAMESPACE, --namespace NAMESPACE
                             The namespace of task
       -t TASK_ID, --taskid TASK_ID
@@ -62,8 +92,14 @@ Download artifacts from command line.
         {
             "clientId": "",
             "accessToken": "",
-            "certificate":
-                {"version":1,"scopes":["*"],"start":xxx,"expiry":xxx,"seed":"xxx","signature":"xxx"}
+            "certificate": {
+                "version":1,
+                "scopes":["*"],
+                "start":xxx,
+                "expiry":xxx,
+                "seed":"xxx",
+                "signature":"xxx"
+            }
         }
 
 
@@ -82,7 +118,8 @@ Travese namespace and download artifacts from GUI.
     optional arguments:
       -h, --help            show this help message and exit
       --credentials CREDENTIALS
-                            The credential JSON file (default: tc_credentials.json)
+                            The credential JSON file
+                            (default: <YOUR_HOME>/tc_credentials.json)
       -n NAMESPACE, --namespace NAMESPACE
                             The namespace of task
       -d DEST_DIR, --dest-dir DEST_DIR
@@ -93,25 +130,15 @@ Travese namespace and download artifacts from GUI.
         {
             "clientId": "",
             "accessToken": "",
-            "certificate":
-                {"version":1,"scopes":["*"],"start":xxx,"expiry":xxx,"seed":"xxx","signature":"xxx"}
+            "certificate": {
+                "version":1,
+                "scopes":["*"],
+                "start":xxx,
+                "expiry":xxx,
+                "seed":"xxx",
+                "signature":"xxx"
+            }
         }
-
-
-Screenshot
-~~~~~~~~~~
-
-* Input Credentials
-
-.. image:: misc/taskcluster_traverse_01.png
-
-* Traverse Namespaces
-
-.. image:: misc/taskcluster_traverse_02.png
-
-* Download Artifacts
-
-.. image:: misc/taskcluster_traverse_03.png
 
 
 SSL InsecurePlatformWarning
