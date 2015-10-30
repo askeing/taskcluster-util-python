@@ -1,5 +1,5 @@
-Screenshot
-~~~~~~~~~~
+Screenshot of taskcluster_traverse
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Input Credentials
 
