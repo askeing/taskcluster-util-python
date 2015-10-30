@@ -1,6 +1,14 @@
 Release History
 ---------------
 
+0.0.18 (2015-10-30)
++++++++++++++++++++
+
+- Move tc_credentials.json to User's Home folder.
+- Update README file.
+- Update usage.
+- Modify the Credentials input GUI of taskcluster_traverse.
+
 0.0.17 (2015-10-27)
 +++++++++++++++++++
 
