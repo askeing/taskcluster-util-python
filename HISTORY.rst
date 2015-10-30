@@ -1,8 +1,17 @@
 Release History
 ---------------
 
+0.0.19 (2015-10-30)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Modify the logger and gui of taskcluster_traverse.
+
 0.0.18 (2015-10-30)
 +++++++++++++++++++
+
+**Features and Improvements**
 
 - Move tc_credentials.json to User's Home folder.
 - Update README file.
