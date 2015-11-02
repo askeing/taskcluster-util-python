@@ -34,10 +34,7 @@ class TraverseRunner(object):
         self.artifact_downloader = None
         self.taskcluster_credentials = os.path.join(os.path.expanduser('~'), 'tc_credentials.json')
 
-    def cli(self):
-        """
-        Handle the argument parse, and the return the instance itself.
-        """
+    def parser(self):
         # argument parser
         parser = argparse.ArgumentParser(prog='taskcluster_traverse',
                                          description='The simple GUI traverse and download tool for Taskcluster.',
@@ -65,9 +62,14 @@ class TraverseRunner(object):
                             help='The dest folder (default: current working folder)')
         parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False,
                             help='Turn on verbose output, with all the debug logger.')
+        return parser.parse_args(sys.argv[1:])
 
+    def cli(self):
+        """
+        Handle the argument parse, and the return the instance itself.
+        """
         # parser the argv
-        options = parser.parse_args(sys.argv[1:])
+        options = self.parser()
         # setup the logging config
         if options.verbose is True:
             verbose_formatter = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'

@@ -2,7 +2,7 @@ import os
 from setuptools import setup, find_packages
 
 
-VERSION = '0.0.19'
+VERSION = '0.0.20'
 
 install_requires = [
     'easygui==0.97.2',

@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+0.0.20 (2015-11-02)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Modify the class for inheritance.
+
 0.0.19 (2015-10-30)
 +++++++++++++++++++
 
