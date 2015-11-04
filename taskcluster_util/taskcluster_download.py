@@ -62,7 +62,7 @@ class DownloadRunner(object):
                                     help='The artifact name on Taskcluster')
         artifact_group.add_argument('-d', '--dest-dir', action='store', dest='dest_dir',
                                     help='The dest folder (default: current working folder)')
-        artifact_group.add_argument('-u', '--signed-url-only', action='store_true', help='Retrieve the signed url and display it. No download is done')
+        artifact_group.add_argument('-u', '--signed-url-only', action='store_true', help='Retrieve the signed url and display it.\nNo download is done.')
         parser.add_argument('-v', '--verbose', action='store_true', dest='verbose', default=False,
                             help='Turn on verbose output, with all the debug logger.')
         return parser.parse_args(sys.argv[1:])

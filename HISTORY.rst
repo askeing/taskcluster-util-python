@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+0.0.21 (2015-11-04)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Provide a way to give TaskCluster builds to Bitbar (Bug 1189354).
+
 0.0.20 (2015-11-02)
 +++++++++++++++++++
 

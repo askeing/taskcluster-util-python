@@ -87,6 +87,9 @@ Download artifacts from command line.
                             The artifact name on Taskcluster
       -d DEST_DIR, --dest-dir DEST_DIR
                             The dest folder (default: current working folder)
+      -u, --signed-url-only
+                            Retrieve the signed url and display it.
+                            No download is done.
 
     The tc_credentials.json Template:
         {
