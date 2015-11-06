@@ -69,9 +69,9 @@ class TraverseRunner(object):
         Handle the argument parse, and the return the instance itself.
         """
         # parser the argv
-        options = self.parser()
+        self.options = self.parser()
         # setup the logging config
-        if options.verbose is True:
+        if self.options.verbose is True:
             verbose_formatter = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
             logging.basicConfig(level=logging.DEBUG, format=verbose_formatter)
         else:
@@ -79,7 +79,7 @@ class TraverseRunner(object):
             logging.basicConfig(level=logging.INFO, format=formatter)
         # check credentials file
         try:
-            abs_credentials_path = os.path.abspath(options.credentials)
+            abs_credentials_path = os.path.abspath(self.options.credentials)
             credentials = Credentials.from_file(abs_credentials_path)
             self.connection_options = {'credentials': credentials}
             logger.info('Load Credentials from {}'.format(abs_credentials_path))
@@ -87,8 +87,8 @@ class TraverseRunner(object):
             logger.warning('No credentials. Run with "--help" for more information.')
             logger.debug(e)
         # assign the variable
-        self.entry_namespace = options.namespace
-        self.dest_dir = options.dest_dir
+        self.entry_namespace = self.options.namespace
+        self.dest_dir = self.options.dest_dir
         return self
 
     def _check_target_dir(self):
@@ -264,6 +264,8 @@ class TraverseRunner(object):
                 user_choice = easygui.ynbox(msg, title)
                 if not user_choice:
                     exit(0)
+                else:
+                    self._reset_arguments()
 
     def do_after_download(self):
         """
@@ -285,6 +287,17 @@ class TraverseRunner(object):
         user_choice = easygui.ynbox(msg, title)
         if not user_choice:
             exit(0)
+        else:
+            self._reset_arguments()
+
+    def _reset_arguments(self):
+        # reset dest folder
+        if not self.options.dest_dir:
+            self.dest_dir = None
+            logger.debug('Reset dest folder.')
+        # reset download file list
+        self.downloaded_file_list = []
+        logger.debug('Reset download file list.')
 
     def run(self):
         """
