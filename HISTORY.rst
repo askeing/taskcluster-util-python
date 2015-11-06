@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+0.0.22 (2015-11-06)
++++++++++++++++++++
+
+**Bugfixes**
+
+- Clean the cache of dest_dir and download_file_list after downloading.
+
 0.0.21 (2015-11-04)
 +++++++++++++++++++
 
