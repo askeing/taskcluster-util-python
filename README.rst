@@ -168,3 +168,16 @@ If you got **Setup script exited with error: command 'gcc' failed with exit stat
 
     sudo apt-get install libffi-dev
 
+
+The Other Issues
+----------------
+
+If you meet any issues related to urllib3, SSL, or tk, please install following packages. (Ubuntu)
+
+.. code-block:: bash
+
+    sudo apt-get install python python-dev python-setuptools libffi-dev libssl-dev
+    sudo easy_install pip
+    sudo pip install -U pip setuptools
+    sudo pip install -U requests
+    sudo pip install -U requests[security]
