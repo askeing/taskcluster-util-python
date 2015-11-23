@@ -101,8 +101,12 @@ class DownloadRunner(object):
             self.connection_options = {'credentials': credentials}
             logger.info('Load Credentials from {}'.format(abs_credentials_path))
         except Exception as e:
-            logger.warning('No credentials. Run with "--help" for more information.')
-            logger.debug(e)
+            if os.path.isfile(abs_credentials_path):
+                logger.error('Please check your credentials file: {}'.format(abs_credentials_path))
+                raise e
+            else:
+                logger.warning('No credentials. Run with "--help" for more information.')
+                logger.debug(e)
 
     def show_latest_artifacts(self, task_id):
         """
