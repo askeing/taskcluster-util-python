@@ -144,6 +144,30 @@ Travese namespace and download artifacts from GUI.
         }
 
 
+taskcluster_login
+~~~~~~~~~~~~~~~~~
+
+Login Taskcluster, get Temporary Credentials, and save to home directory.
+
+.. code-block:: bash
+    usage: taskcluster_login [-h] [-a ADDRESS] [-p PORT] [--file CREDENTIALS_FILE]
+                             [-v]
+
+    The simple login tool for Taskcluster.
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -a ADDRESS, --address ADDRESS
+                            Specify the server address. (default: localhost)
+      -p PORT, --port PORT  Specify the server port. (default: 0)
+      --file CREDENTIALS_FILE
+                            The credentials file. It will be overwritten if it
+                            already exist. (default:
+                            /Users/Askeing/tc_credentials.json)
+      -v, --verbose         Turn on verbose output, with all the debug logger.
+                            (default: False)
+
+
 SSL InsecurePlatformWarning
 ---------------------------
 
