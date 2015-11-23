@@ -2,7 +2,7 @@ import os
 from setuptools import setup, find_packages
 
 
-VERSION = '0.0.23'
+VERSION = '0.0.24'
 
 install_requires = [
     'easygui==0.97.2',
@@ -46,5 +46,6 @@ if __name__ == '__main__':
           [console_scripts]
           taskcluster_download = taskcluster_util.taskcluster_download:main
           taskcluster_traverse = taskcluster_util.taskcluster_traverse:main
+          taskcluster_login = taskcluster_util.taskcluster_login:main
           """,
   )

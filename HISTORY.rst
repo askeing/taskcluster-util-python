@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+0.0.24 (2015-11-23)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Add taskcluster_login for getting credentials.
+
 0.0.23 (2015-11-23)
 +++++++++++++++++++
 
