@@ -1,5 +1,6 @@
 import json
 import logging
+import datetime
 
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,7 @@ class Credentials(dict):
 
         try:
             self.certificate = kwargs['certificate']
+            self.is_expired()
         except KeyError:
             logger.warning('''No certificate is present in the given credentials. If the credentials are temporary you won't be able to download anything''')
 
@@ -24,6 +26,24 @@ class Credentials(dict):
         # https://auth.taskcluster.net/ without escaping all the quotes, we perform this change
         # of type.
         return self._enforce_string(value)
+
+    def is_expired(self):
+        if self.certificate:
+            try:
+                expiry_timestamp = self.certificate.get('expiry')
+                if len(str(expiry_timestamp)) == 13:
+                    expiry_timestamp = int(str(expiry_timestamp)[0:-3])
+                expiry = datetime.datetime.fromtimestamp(expiry_timestamp)
+                now = datetime.datetime.now()
+                if now > expiry:
+                    logger.warning('Temporary credentials expired!!!')
+                    return True
+                else:
+                    logger.info('Temporary credentials will expire on {}/{}/{} {}:{}.'
+                                .format(expiry.year, expiry.month, expiry.day, expiry.hour, expiry.minute))
+                    return False
+            except Exception as e:
+                logger.debug(e)
 
     @staticmethod
     def from_file(file_path):
