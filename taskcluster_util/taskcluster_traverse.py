@@ -80,9 +80,9 @@ class TraverseRunner(object):
         # check credentials file
         try:
             abs_credentials_path = os.path.abspath(self.options.credentials)
+            logger.info('Load Credentials from {}'.format(abs_credentials_path))
             credentials = Credentials.from_file(abs_credentials_path)
             self.connection_options = {'credentials': credentials}
-            logger.info('Load Credentials from {}'.format(abs_credentials_path))
         except Exception as e:
             logger.warning('No credentials. Run with "--help" for more information.')
             logger.debug(e)
