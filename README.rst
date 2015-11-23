@@ -145,11 +145,12 @@ Travese namespace and download artifacts from GUI.
 
 
 taskcluster_login
-~~~~~~~~~~~~~~~~~
++++++++++++++++++
 
 Login Taskcluster, get Temporary Credentials, and save to home directory.
 
 .. code-block:: bash
+
     usage: taskcluster_login [-h] [-a ADDRESS] [-p PORT] [--file CREDENTIALS_FILE]
                              [-v]
 
