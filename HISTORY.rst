@@ -1,6 +1,17 @@
 Release History
 ---------------
 
+0.0.23 (2015-11-23)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Check the credentials does or doesn't expired, and print on console.
+
+**Bugfixes**
+
+- Raise exception when loading credentials file error.
+
 0.0.22 (2015-11-06)
 +++++++++++++++++++
 
