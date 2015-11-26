@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 
 
 def _yesno(path):
-    choice = raw_input('Do you want to delete {}? [Y/n]'.format(path)).lower()
-    if choice == 'n':
+    choice = raw_input('Do you want to delete {}? [y/N]'.format(path)).lower()
+    if choice not in ('y', 'Y'):
         print('Stop login.')
         exit(0)
 
@@ -37,8 +37,9 @@ def _remove_exist_file(file_path):
             shutil.rmtree(abs_file_path)
         elif os.path.isfile(abs_file_path):
             _yesno(abs_file_path)
-            logger.info('Remove file: {}'.format(abs_file_path))
-            os.remove(abs_file_path)
+            backup_file = '{}.back'.format(abs_file_path)
+            logger.info('Remove file: {}, backup to {}'.format(abs_file_path, backup_file))
+            shutil.move(abs_file_path, backup_file)
     except Exception as e:
         if os.path.exists(abs_file_path):
             logger.error('Please check: {}'.format(abs_file_path))
@@ -95,7 +96,7 @@ class LoginBot(object):
             query = urlparse(self.path).query
             query_components = {}
             for query_item in query.split('&'):
-                if query_item.strip() == "":
+                if query_item.strip() == '':
                     continue
                 k, v = query_item.split('=')
                 if k == 'certificate':
