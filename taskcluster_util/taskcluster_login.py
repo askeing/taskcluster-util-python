@@ -95,6 +95,8 @@ class LoginBot(object):
             query = urlparse(self.path).query
             query_components = {}
             for query_item in query.split('&'):
+                if query_item.strip() == "":
+                    continue
                 k, v = query_item.split('=')
                 if k == 'certificate':
                     certificate = json.loads(urllib.unquote(v).decode('utf-8'))
