@@ -1,6 +1,18 @@
 Release History
 ---------------
 
+0.0.25 (2015-11-30)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Add taskcluster_login for getting credentials.
+- Make user choice more strict when getting credentials.
+
+**Bugfixes**
+
+- Fix the issue when query is an empty string (taskcluster_login).
+
 0.0.24 (2015-11-23)
 +++++++++++++++++++
 

@@ -35,27 +35,27 @@ You can put the credentials into **tc_credentials.json** file under your home fo
 
 .. code-block:: bash
 
-	$ <YOUR_EDITOR> ~/tc_credentials.json
+    $ <YOUR_EDITOR> ~/tc_credentials.json
 
 The file format will be:
 
 .. code-block::
 
-	{
-		"clientId": "<YOUR_CLIENTID>",
-		"accessToken": "<YOUR_ACCESSTOKEN>",
-		"certificate": <YOUR_CERTIFICATE>
-	}
+    {
+        "clientId": "<YOUR_CLIENTID>",
+        "accessToken": "<YOUR_ACCESSTOKEN>",
+        "certificate": <YOUR_CERTIFICATE>
+    }
 
 Here's a simple example:
 
 .. code-block::
 
-	{
-		"clientId": "foo-XXX",
-		"accessToken": "hello-world-XXX",
-		"certificate": {"version":1,"scopes":["*"],"start":1,"expiry":9,"seed":"hello","signature":"world="}
-	}
+    {
+        "clientId": "foo-XXX",
+        "accessToken": "hello-world-XXX",
+        "certificate": {"version":1,"scopes":["*"],"start":1,"expiry":9,"seed":"hello","signature":"world="}
+    }
 
 
 taskcluster_download
