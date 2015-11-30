@@ -10,6 +10,7 @@ import shutil
 import urllib
 import logging
 import argparse
+import datetime
 import threading
 import webbrowser
 from argparse import ArgumentDefaultsHelpFormatter
@@ -102,6 +103,15 @@ class LoginBot(object):
                 if k == 'certificate':
                     certificate = json.loads(urllib.unquote(v).decode('utf-8'))
                     query_components[k] = certificate
+                    try:
+                        expiry_timestamp = certificate.get('expiry')
+                        if len(str(expiry_timestamp)) == 13:
+                            expiry_timestamp = int(str(expiry_timestamp)[0:-3])
+                        expiry = datetime.datetime.fromtimestamp(expiry_timestamp)
+                        logger.info('Temporary credentials will expire on {}/{}/{} {}:{}.'
+                                    .format(expiry.year, expiry.month, expiry.day, expiry.hour, expiry.minute))
+                    except Exception as e:
+                        logger.debug(e)
                 else:
                     query_components[k] = v
             logger.debug('GET Parameters: {}'.format(query_components))
