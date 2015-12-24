@@ -82,7 +82,7 @@ class DownloadRunner(object):
         self.should_display_signed_url_only = options.signed_url_only
 
         self._configure_login()
-        self._check_crendentials_file(options)
+        self.check_crendentials_file(options)
         return self
 
     def _configure_login(self):
@@ -94,9 +94,12 @@ class DownloadRunner(object):
             logging_config = LOGGING_POLICY['default']
         logging.basicConfig(level=logging_config['level'], format=logging_config['format'])
 
-    def _check_crendentials_file(self, options):
+    def check_crendentials_file(self, options):
         try:
-            abs_credentials_path = os.path.abspath(options.credentials)
+            path = self.taskcluster_credentials
+            if options:
+                path = options.credentials
+            abs_credentials_path = os.path.abspath(path)
             credentials = Credentials.from_file(abs_credentials_path)
             self.connection_options = {'credentials': credentials}
             logger.info('Load Credentials from {}'.format(abs_credentials_path))
