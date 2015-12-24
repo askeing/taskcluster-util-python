@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+0.0.26 (2015-12-24)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Modify the taskcluster_download method for easier usage.
+
 0.0.25 (2015-11-30)
 +++++++++++++++++++
 
