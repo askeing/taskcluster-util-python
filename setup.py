@@ -2,11 +2,11 @@ import os
 from setuptools import setup, find_packages
 
 
-VERSION = '0.0.26'
+VERSION = '0.0.27'
 
 install_requires = [
     'easygui==0.97.2',
-    'taskcluster==0.0.27',
+    'taskcluster==0.0.32',
     'progressbar',
 ]
 

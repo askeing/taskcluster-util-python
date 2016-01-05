@@ -1,6 +1,17 @@
 Release History
 ---------------
 
+0.0.27 (2016-01-05)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Update the taskcluster-client.py to 0.0.32.
+
+**Bugfixes**
+
+- Fix the gzip encoding issue of download.
+
 0.0.26 (2015-12-24)
 +++++++++++++++++++
 
