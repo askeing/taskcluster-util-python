@@ -53,9 +53,16 @@ class Downloader(object):
         url_handler = urllib2.urlopen(signed_url)
 
         total_length = 0
-        content_length = url_handler.info().getheader('Content-Length').strip()
+        content_length = url_handler.info().getheader('Content-Length')
         if content_length is not None:
-            total_length = int(content_length)
+            total_length = int(content_length.strip())
+
+        # handle GZip format
+        is_gzip = False
+        content_encoding = url_handler.info().getheader('Content-Encoding')
+        if content_encoding and 'gzip' in content_encoding.strip():
+            logger.info('Content-Encoding={}'.format(content_encoding))
+            is_gzip = True
 
         chunk_size = 1024
         current_size = 0
@@ -81,7 +88,7 @@ class Downloader(object):
         final_file_path = temp_local_file
         abs_dest_dir = os.path.abspath(dest_dir) if dest_dir else os.getcwd()
         try:
-            FolderHandler(abs_dest_dir).copy_elements_from(temp_local_file)
+            FolderHandler(abs_dest_dir).copy_elements_from(temp_local_file, is_gzip)
             final_file_path = os.path.join(abs_dest_dir, base_filename)
             # remove temp folder
             try:
@@ -119,9 +126,17 @@ class FolderHandler:
             logger.debug('errno: [{}], strerror: [{}], filename: [{}]'.format(e.errno, e.strerror, e.filename))
             raise Exception('Can not create the folder: [{}]'.format(self.path))
 
-    def copy_elements_from(self, origin):
+    def copy_elements_from(self, origin, is_gzip=False):
         """
         Copy file from origin to target folder.
         @param origin: the origin file path.
         """
-        shutil.copy(origin, self.path)
+        if is_gzip:
+            import gzip
+            logger.info('Doing gzip decode...')
+            with gzip.open(origin, 'rb') as gzip_buffer:
+                file_content = gzip_buffer.read()
+                with open(os.path.join(self.path, os.path.basename(origin)), 'wb') as fd:
+                    fd.write(file_content)
+        else:
+            shutil.copy(origin, self.path)
