@@ -115,20 +115,23 @@ class LoginBot(object):
                 else:
                     query_components[k] = v
             logger.debug('GET Parameters: {}'.format(query_components))
-            # write to file
-            logger.info('Write credentials to {}'.format(credentials_file))
-            with open(credentials_file, mode='w') as f:
-                json.dump(query_components, f, indent=4)
-            # response
-            self.send_response(200)
-            self.send_header('Content-type', 'text/html')
-            self.end_headers()
-            self.wfile.write('<h1>Login Successful</h1><br>You can close this window now...')
-            # stop server
-            logger.debug('======= Stop Server =======')
-            assassin = threading.Thread(target=self.server.shutdown)
-            assassin.daemon = True
-            assassin.start()
+            if 'certificate' not in query_components:
+                logger.warning('Do not get certificate from GET Parameters.'.format(query_components))
+            else:
+                # write to file
+                logger.info('Write credentials to {}'.format(credentials_file))
+                with open(credentials_file, mode='w') as f:
+                    json.dump(query_components, f, indent=4)
+                # response
+                self.send_response(200)
+                self.send_header('Content-type', 'text/html')
+                self.end_headers()
+                self.wfile.write('<h1>Login Successful</h1><br>You can close this window now...')
+                # stop server
+                logger.debug('======= Stop Server =======')
+                assassin = threading.Thread(target=self.server.shutdown)
+                assassin.daemon = True
+                assassin.start()
 
         def log_message(self, format, *args):
             return
