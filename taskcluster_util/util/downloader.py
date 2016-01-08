@@ -58,7 +58,7 @@ class Downloader(object):
         is_gzip = False
         content_encoding = url_handler.info().getheader('Content-Encoding')
         if content_encoding and 'gzip' in content_encoding.strip():
-            logger.info('Content-Encoding={}'.format(content_encoding))
+            logger.debug('Content-Encoding={}'.format(content_encoding))
             is_gzip = True
 
         chunk_size = 1024
@@ -130,7 +130,7 @@ class FolderHandler:
         """
         if is_gzip:
             import gzip
-            logger.info('Doing gzip decode...')
+            logger.debug('Doing gzip decode...')
             with gzip.open(origin, 'rb') as gzip_buffer:
                 file_content = gzip_buffer.read()
                 with open(os.path.join(self.path, os.path.basename(origin)), 'wb') as fd:
