@@ -14,6 +14,7 @@ import easygui
 from util.finder import *
 from util.downloader import *
 from model.credentials import Credentials
+from model.login_policy import LOGGING_POLICY
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,9 @@ class TraverseRunner(object):
     def __init__(self, connection_options=None):
         if not connection_options:
             connection_options = {}
+        self.is_verbose = False
         self.connection_options = connection_options
+        self.origin_dest_dir = None
         self.dest_dir = None
         self.entry_namespace = ''
         self.downloaded_file_list = []
@@ -69,27 +72,35 @@ class TraverseRunner(object):
         Handle the argument parse, and the return the instance itself.
         """
         # parser the argv
-        self.options = self.parser()
+        options = self.parser()
+        self.is_verbose = options.verbose
+        # assign the variable
+        self.entry_namespace = options.namespace
+        self.origin_dest_dir = options.dest_dir
+        self.dest_dir = options.dest_dir
+
         # setup the logging config
-        if self.options.verbose is True:
-            verbose_formatter = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-            logging.basicConfig(level=logging.DEBUG, format=verbose_formatter)
-        else:
-            formatter = '%(levelname)s: %(message)s'
-            logging.basicConfig(level=logging.INFO, format=formatter)
+        self._configure_login()
+
         # check credentials file
         try:
-            abs_credentials_path = os.path.abspath(self.options.credentials)
-            logger.info('Load Credentials from {}'.format(abs_credentials_path))
+            abs_credentials_path = os.path.abspath(options.credentials)
+            logger.debug('Load Credentials from {}'.format(abs_credentials_path))
             credentials = Credentials.from_file(abs_credentials_path)
             self.connection_options = {'credentials': credentials}
         except Exception as e:
             logger.warning('No credentials. Run with "--help" for more information.')
             logger.debug(e)
-        # assign the variable
-        self.entry_namespace = self.options.namespace
-        self.dest_dir = self.options.dest_dir
         return self
+
+    def _configure_login(self):
+        if self.is_verbose is True:
+            logging_config = LOGGING_POLICY['verbose']
+        else:
+            logging_config = LOGGING_POLICY['default']
+            # For removing log "INFO: Starting new HTTPS connection" from requests package
+            logging.getLogger('requests').setLevel(logging.WARNING)
+        logging.basicConfig(level=logging_config['level'], format=logging_config['format'])
 
     def _check_target_dir(self):
         """
@@ -182,7 +193,7 @@ class TraverseRunner(object):
                 * Tips: [↑][↓] Move, [Space] Select, [Enter] OK
                 ''').format(task_name, task_id)
             else:
-                logger.info('Task ID: {}'.format(task_id))
+                logger.debug('Task ID: {}'.format(task_id))
                 msg = textwrap.dedent('''\
                 Please select the artifacts you want to download.
 
@@ -235,7 +246,7 @@ class TraverseRunner(object):
                 self.downloaded_file_list = []
                 # after user select the dir, download artifacts
                 for item in choice_artifact_list:
-                    logger.info('Download: {}'.format(item))
+                    logger.debug('Download: {}'.format(item))
                     try:
                         local_file = self.artifact_downloader.download_latest_artifact(task_id, item, self.dest_dir)
                         self.downloaded_file_list.append(local_file)
@@ -273,7 +284,7 @@ class TraverseRunner(object):
         """
         files_string = '\n'
         for f in self.downloaded_file_list:
-            logger.info('Download to {}'.format(f))
+            logger.debug('Download to {}'.format(f))
             files_string = '{}[{}]\n'.format(files_string, f)
         title = 'Download'
         msg = textwrap.dedent('''\
@@ -292,7 +303,7 @@ class TraverseRunner(object):
 
     def _reset_arguments(self):
         # reset dest folder
-        if not self.options.dest_dir:
+        if not self.origin_dest_dir:
             self.dest_dir = None
             logger.debug('Reset dest folder.')
         # reset download file list
