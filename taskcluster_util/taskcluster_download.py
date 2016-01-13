@@ -92,6 +92,8 @@ class DownloadRunner(object):
             logging_config = LOGGING_POLICY['no_logs']
         else:
             logging_config = LOGGING_POLICY['default']
+            # For removing log "INFO: Starting new HTTPS connection" from requests package
+            logging.getLogger('requests').setLevel(logging.WARNING)
         logging.basicConfig(level=logging_config['level'], format=logging_config['format'])
 
     def check_crendentials_file(self, options):
@@ -102,7 +104,7 @@ class DownloadRunner(object):
             abs_credentials_path = os.path.abspath(path)
             credentials = Credentials.from_file(abs_credentials_path)
             self.connection_options = {'credentials': credentials}
-            logger.info('Load Credentials from {}'.format(abs_credentials_path))
+            logger.debug('Load Credentials from {}'.format(abs_credentials_path))
         except Exception as e:
             if os.path.isfile(abs_credentials_path):
                 logger.error('Please check your credentials file: {}'.format(abs_credentials_path))
@@ -131,17 +133,17 @@ class DownloadRunner(object):
         if self.namespace is not None:
             # remove the 'index.' and 'root.' of namespace
             task_namespace = self.namespace
-            logger.info('Finding the TaskID of Namespace [{}] ...'.format(task_namespace))
+            logger.debug('Finding the TaskID of Namespace [{}] ...'.format(task_namespace))
             if self.namespace.startswith('index.'):
                 task_namespace = self.namespace[len('index.'):]
-                logger.info('Remove the ["index."] of Namespace [{}].'.format(task_namespace))
+                logger.debug('Remove the ["index."] of Namespace [{}].'.format(task_namespace))
             elif self.namespace.startswith('root.'):
                 task_namespace = self.namespace[len('root.'):]
-                logger.info('Remove the ["root."] of Namespace [{}].'.format(task_namespace))
+                logger.debug('Remove the ["root."] of Namespace [{}].'.format(task_namespace))
             # find TaskId from Namespace
             task_finder = TaskFinder(self.connection_options)
             task_id = task_finder.get_taskid_by_namespace(task_namespace)
-            logger.info('The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
+            logger.debug('The TaskID of Namespace [{}] is [{}].'.format(task_namespace, task_id))
         else:
             task_id = self.task_id
 
@@ -150,12 +152,12 @@ class DownloadRunner(object):
             # no artifact_name, then get the latest artifacts list
             self.show_latest_artifacts(task_id)
         elif self.should_display_signed_url_only is True:
-            print self.artifact_downloader.get_signed_url(task_id, self.artifact_name)
+            print(self.artifact_downloader.get_signed_url(task_id, self.artifact_name))
         else:
             # has artifact_name, then download it
-            logger.info('Downloading latest artifact [{}] of TaskID [{}] ...'.format(self.artifact_name, task_id))
+            logger.info('Downloading [{}] from TaskID [{}] ...'.format(self.artifact_name, task_id))
             local_file = self.artifact_downloader.download_latest_artifact(task_id, self.artifact_name, self.dest_dir)
-            logger.info('Download [{}] from TaskID [{}] to [{}] done.'.format(self.artifact_name, task_id, local_file))
+            logger.debug('Downloaded to [{}]'.format(local_file))
 
 
 def main():
