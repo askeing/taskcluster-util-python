@@ -1,6 +1,13 @@
 Release History
 ---------------
 
+0.0.28 (2016-01-29)
++++++++++++++++++++
+
+**Features and Improvements**
+
+- Reduce the log information.
+
 0.0.27 (2016-01-05)
 +++++++++++++++++++
 
